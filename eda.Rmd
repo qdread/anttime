@@ -1,0 +1,179 @@
+---
+title: "Exploration of ant foraging data"
+author: "Quentin D. Read"
+date: "February 24, 2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is some initial exploration of the ant foraging data sent to me by Katie and Mariano.
+
+The goal of the project is to explore whether or not ants shift their foraging behavior to different times of day wth experimental warming, and whether any variation in shifts among species can be explained by either known thermal tolerance traits for the individual species or their position in the behavioral dominance hierarchy. So far I only have the foraging data and not the trait data.
+
+## Load data
+
+```{r load data, message=FALSE}
+library(tidyverse)
+library(directlabels)
+th <- theme_minimal()
+
+trt <- read_csv('data/chamber_treatments.csv')
+dat <- read_csv('data/data_allmonths_allsites.csv')
+```
+
+## Make summary tables/figures
+
+First look at what species are at the different sites, ignoring treatment. Do any overlap?
+
+```{r species vectors}
+
+nc_spp <- unique(dat$spp[dat$site == 'Duke'])
+ma_spp <- unique(dat$spp[dat$site == 'Harvard'])
+
+nc_spp
+
+ma_spp
+
+```
+
+Looks like `none` means no ants were seen at that time. That's about 3000 of the 7000 rows. There are only a handful of rows with either unknown species or `NA` for species.
+
+```{r unknown}
+
+sum(dat$spp %in% 'none')
+sum(dat$spp %in% 'unk')
+sum(is.na(dat$spp))
+
+nc_spp <- unique(dat$spp[dat$site == 'Duke' & !(dat$spp %in% c('none','unk') | is.na(dat$spp))])
+ma_spp <- unique(dat$spp[dat$site == 'Harvard' & !(dat$spp %in% c('none','unk') | is.na(dat$spp))])
+
+nc_spp
+
+ma_spp
+
+```
+
+
+There are `r length(nc_spp)` unique species in NC, `r length(ma_spp)` unique species in MA, of which `r length(intersect(nc_spp,ma_spp))` are found in both locations. 
+
+What are the abundances of the species, ignoring all other factors?
+
+```{r abundances}
+
+# Sum up by site and species
+dat %>%
+  filter(!spp %in% c('none','unk'), !is.na(spp)) %>%
+  group_by(site, spp) %>%
+  summarize(n = sum(number, na.rm = TRUE)) %>%
+  arrange(site, -n) %>%
+  print(n = nrow(.))
+
+
+```
+
+What is the monthly pattern of activity for each species, ignoring treatment and time of day?
+
+Show on a log scale because there are a few very abundant species in Duke Forest.
+
+```{r activity month figure}
+
+# Convert month to ordered factor
+dat <- dat %>%
+  filter(!spp %in% c('none','unk'), !is.na(spp)) %>%
+  mutate(month = factor(month, levels = month.name))
+
+# Sum by site, month, and species and plot
+dat %>%
+  group_by(site, month, spp) %>%
+  summarize(n = sum(number, na.rm = TRUE)) %>%
+  ggplot(aes(x = as.numeric(month), y = n, group = spp, color = spp)) +
+    facet_grid(site ~ .) +
+    geom_line() +
+    geom_dl(aes(label = spp), method = 'last.points') +
+    scale_y_log10() +
+    scale_x_discrete(limits = month.abb, name = 'month') +
+    th +
+    theme(legend.position = 'none')
+
+```
+
+
+Next look at the time of day that each is active throughout the day, ignoring treatment and month.
+
+```{r activity time figures}
+
+# Sum up by site, time of day, and species and plot
+(p <- dat %>%
+  group_by(site, time, spp) %>%
+  summarize(n = sum(number, na.rm = TRUE)) %>%
+  ggplot(aes(x = time, y = n, group = spp, color = spp)) +
+    facet_grid(site ~ .) +
+    geom_line() +
+    geom_dl(aes(label = spp), method = 'last.points') +
+    scale_y_log10() +
+    th +
+    theme(legend.position = 'none'))
+
+# Alternatively this could be done as a circular plot to emphasize the circularity of the data
+p + coord_polar(theta = 'x') + scale_x_continuous(expand = c(0,0))
+
+
+```
+
+Another way to show this would be to ignore abundance and just show each species as a thick line if it is out at all. That might not be the best for stats but it might be a good way to show the patterns. It looks like a lot of species are active throughout the 24 hour period. A few species clearly only come out during the day, and based on this I can really only see one exclusively nocturnal and one exclusively crepuscular species, both at Duke Forest.
+
+```{r activity ignoring abundance}
+(p <- dat %>%
+  group_by(site, spp) %>%
+  group_modify(~ data.frame(time = 0:23, active = sapply(0:23, function(hr) any(hr %in% .$time)))) %>%
+  ggplot(aes(x = spp, y = time, fill = active)) +
+    facet_wrap(~ site) +
+    geom_tile() +
+    coord_flip() +
+    scale_fill_manual(values = c('gray50', 'goldenrod')) +
+    th +
+    theme(legend.position = 'bottom'))
+
+```
+
+
+Next look at the difference in activity among treatments, ignoring time of day and month.
+
+There are three ambient chambers (0 degree treatment) but only one for each level of warming so if we want abundance by treatment to stand for activity, we need to correct for this.
+
+```{r activity by treatment figures}
+
+# Join with treatment
+dat <- dat %>% left_join(trt)
+
+dat %>%
+  group_by(site, temperature, spp) %>%
+  summarize(n = sum(number, na.rm = TRUE)/length(unique(chamber))) %>% # Should correct for 3 ambient chambers
+  ggplot(aes(x = temperature, y = n, group = spp, color = spp)) +
+    facet_grid(site ~ .) +
+    geom_line() + geom_point(size = 2) +
+    geom_dl(aes(label = spp), method = 'last.points') +
+    scale_y_log10() +
+    th +
+    theme(legend.position = 'none')
+
+```
+
+
+## Temporal niche change by species, site, and treatment
+
+The next figures will try to illustrate the actual pattern we are trying to describe: whether temperature treatment affects the temporal distribution of activity of individual species at individual sites. We have activity data by:
+
+* site
+* species
+* day of year
+* time of day
+* chamber (with different warming treatment per chamber)
+
+So any statistical model we do will either have to average out some of those, or account for all of them.
+
+Make a couple of the same figures as before but split up across multiple factors to see whether there are any visible patterns.
+

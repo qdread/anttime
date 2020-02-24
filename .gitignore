@@ -49,3 +49,6 @@ slurm*.out
 
 # PDFs produced in Rmarkdown directory
 Rmd/*.pdf
+
+# PDFs in root directory
+*.pdf
