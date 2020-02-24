@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, tidy = TRUE)
 ```
 
 This is some initial exploration of the ant foraging data sent to me by Katie and Mariano.
@@ -15,7 +15,7 @@ The goal of the project is to explore whether or not ants shift their foraging b
 
 ## Load data
 
-```{r load data, message=FALSE}
+```{r load data, message=FALSE, echo = FALSE}
 library(tidyverse)
 library(directlabels)
 th <- theme_minimal()
@@ -25,6 +25,8 @@ dat <- read_csv('data/data_allmonths_allsites.csv')
 ```
 
 ## Make summary tables/figures
+
+### overall counts
 
 First look at what species are at the different sites, ignoring treatment. Do any overlap?
 
@@ -61,7 +63,7 @@ There are `r length(nc_spp)` unique species in NC, `r length(ma_spp)` unique spe
 
 What are the abundances of the species, ignoring all other factors?
 
-```{r abundances}
+```{r abundances, echo = FALSE}
 
 # Sum up by site and species
 dat %>%
@@ -74,11 +76,13 @@ dat %>%
 
 ```
 
+### patterns across date of year and time of day
+
 What is the monthly pattern of activity for each species, ignoring treatment and time of day?
 
 Show on a log scale because there are a few very abundant species in Duke Forest.
 
-```{r activity month figure}
+```{r activity month figure, echo = FALSE}
 
 # Convert month to ordered factor
 dat <- dat %>%
@@ -101,9 +105,9 @@ dat %>%
 ```
 
 
-Next look at the time of day that each is active throughout the day, ignoring treatment and month.
+Next look at the time of day that each is active throughout the day, ignoring treatment and month. Try out a circular plot too, to emphasize the circularity of the data (turns out it's very ugly).
 
-```{r activity time figures}
+```{r activity time figures, echo = FALSE}
 
 # Sum up by site, time of day, and species and plot
 (p <- dat %>%
@@ -125,7 +129,7 @@ p + coord_polar(theta = 'x') + scale_x_continuous(expand = c(0,0))
 
 Another way to show this would be to ignore abundance and just show each species as a thick line if it is out at all. That might not be the best for stats but it might be a good way to show the patterns. It looks like a lot of species are active throughout the 24 hour period. A few species clearly only come out during the day, and based on this I can really only see one exclusively nocturnal and one exclusively crepuscular species, both at Duke Forest.
 
-```{r activity ignoring abundance}
+```{r activity ignoring abundance, echo = FALSE}
 (p <- dat %>%
   group_by(site, spp) %>%
   group_modify(~ data.frame(time = 0:23, active = sapply(0:23, function(hr) any(hr %in% .$time)))) %>%
@@ -139,16 +143,18 @@ Another way to show this would be to ignore abundance and just show each species
 
 ```
 
+### patterns across treatments
 
 Next look at the difference in activity among treatments, ignoring time of day and month.
 
-There are three ambient chambers (0 degree treatment) but only one for each level of warming so if we want abundance by treatment to stand for activity, we need to correct for this.
 
-```{r activity by treatment figures}
+
+```{r activity by treatment figures, echo = FALSE}
 
 # Join with treatment
 dat <- dat %>% left_join(trt)
 
+# There are three ambient chambers (0 degree treatment) but only one for each level of warming so if we want abundance by treatment to stand for activity, we need to correct for this.
 dat %>%
   group_by(site, temperature, spp) %>%
   summarize(n = sum(number, na.rm = TRUE)/length(unique(chamber))) %>% # Should correct for 3 ambient chambers
@@ -175,5 +181,108 @@ The next figures will try to illustrate the actual pattern we are trying to desc
 
 So any statistical model we do will either have to average out some of those, or account for all of them.
 
-Make a couple of the same figures as before but split up across multiple factors to see whether there are any visible patterns.
+Next I will make a couple of the same kind of figures as before but split up across multiple factors to see whether there are any visible patterns. 
+In this set of figures date of year is ignored. Also the chamberless controls are left out.
 
+Here is the presence absence figure done for each species across all the treatments.
+
+```{r presence absence by species, echo = FALSE}
+# Get presence-absence then modify the chamber ID so that they will be shown in order of temperature.
+
+presence_absence <- dat %>%
+  group_by(site, spp, chamber, temperature) %>%
+  group_modify(~ data.frame(time = 0:23, active = sapply(0:23, function(hr) any(hr %in% .$time))))
+
+display_order <- trt %>%
+  arrange(site, temperature)
+
+# For now just leave out the chamberless controls.
+
+presence_absence %>%
+  ungroup %>%
+  filter(site %in% 'Duke', !chamber %in% c(13, 14, 15)) %>%
+  mutate(chamber = factor(chamber, levels = order(display_order$chamber[display_order$site=='Duke']))) %>%
+  ggplot(aes(x = chamber, y = time, fill = active)) +
+    facet_wrap(~ spp) +
+    geom_tile() +
+    scale_x_discrete(name = 'temperature', labels = display_order$temperature[display_order$site %in% 'Duke']) +
+    coord_flip() +
+    scale_fill_manual(values = c('gray50', 'goldenrod')) +
+    th +
+    theme(legend.position = 'bottom') +
+    ggtitle('Duke Forest')
+
+presence_absence %>%
+  ungroup %>%
+  filter(site %in% 'Harvard', !chamber %in% c(13, 14, 15)) %>%
+  mutate(chamber = factor(chamber, levels = order(display_order$chamber[display_order$site=='Harvard']))) %>%
+  ggplot(aes(x = chamber, y = time, fill = active)) +
+    facet_wrap(~ spp) +
+    geom_tile() +
+    scale_x_discrete(name = 'temperature', labels = display_order$temperature[display_order$site %in% 'Harvard']) +
+    coord_flip() +
+    scale_fill_manual(values = c('gray50', 'goldenrod')) +
+    th +
+    theme(legend.position = 'bottom') +
+    ggtitle('Harvard Forest')
+```
+
+The same figure could be made with different shadings for abundance to see whether the presence-absence is too crude.
+
+```{r abundance by species, echo = FALSE}
+# Get presence-absence then modify the chamber ID so that they will be shown in order of temperature.
+
+abundance <- dat %>%
+  group_by(site, spp, chamber, temperature) %>%
+  group_modify(~ data.frame(time = 0:23, abund = sapply(0:23, function(hr) sum(.$number[.$time == hr], na.rm = TRUE))))
+
+display_order <- trt %>%
+  arrange(site, temperature)
+
+# For now just leave out the chamberless controls.
+
+color_scale <- scale_fill_viridis_c(trans = 'log', breaks = c(1, 3, 10, 30, 100, 300))
+
+abundance %>%
+  ungroup %>%
+  filter(site %in% 'Duke', !chamber %in% c(13, 14, 15)) %>%
+  mutate(chamber = factor(chamber, levels = order(display_order$chamber[display_order$site=='Duke']))) %>%
+  ggplot(aes(x = chamber, y = time, fill = abund)) +
+    facet_wrap(~ spp) +
+    geom_tile() +
+    scale_x_discrete(name = 'temperature', labels = display_order$temperature[display_order$site %in% 'Duke']) +
+    coord_flip() +
+    color_scale +
+    th +
+    theme(legend.position = 'bottom') +
+    ggtitle('Duke Forest')
+
+abundance %>%
+  ungroup %>%
+  filter(site %in% 'Harvard', !chamber %in% c(13, 14, 15)) %>%
+  mutate(chamber = factor(chamber, levels = order(display_order$chamber[display_order$site=='Harvard']))) %>%
+  ggplot(aes(x = chamber, y = time, fill = abund)) +
+    facet_wrap(~ spp) +
+    geom_tile() +
+    scale_x_discrete(name = 'temperature', labels = display_order$temperature[display_order$site %in% 'Harvard']) +
+    coord_flip() +
+    color_scale +
+    th +
+    theme(legend.position = 'bottom') +
+    ggtitle('Harvard Forest')
+```
+
+# Initial thoughts 
+
+Thoughts on the data:
+
+* It sure does not look like there are many patterns here. But it will be hard to convincingly make the case that the lack of pattern is due to species interactions preventing species from changing their temporal niches, versus lack of statistical power to detect the effect.
+* What do you do if the species is not present at all under certain treatments? Exclude them from analysis of foraging time change, because that species was never present in the vicinity of that chamber to begin with, or keep them because it shows the species got completely knocked out by the warming treatment?
+* Is it better to look at abundance on a linear or log scale?
+* If the lack of response by species has something to do with species interactions, wouldn't we expect to see some species changing and some not, based on their position on the dominance hierarchy or something about their relative differences in thermal tolerance?
+
+More thoughts on the Levy et al. paper:
+
+* The approach based on energetic costs from Levy et al. is pretty interesting. In your initial comment you mention that energetic costs also come into play when ants are interacting with one another. I don't see why, in principle, you could not include those in the model too. So Levy et al.'s approach does not necessarily have to ignore species interactions, though they did. Is there any way we could use dominance hierarchy data and thermal tolerance data that you have to at least get the relative energetic cost that ants pay when they have a competitive interaction with other species? If that were added to the model you could predict how much energy an interaction would have to cost before it would no longer make sense for a species to shift its temporal niche to where it has to interact with other species. 
+* How much does it matter that Levy's findings were all about endotherms and these are ectotherms? I am not familiar enough with the literature to know.
+* It seems like Levy's predictions do not take differences in nighttime and daytime warming, or seasonal differences in warming, into account. If the increase in mean temperature is driven by a higher warming at night than in the day, all the predictions might be really different.
