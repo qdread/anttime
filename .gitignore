@@ -52,3 +52,8 @@ Rmd/*.pdf
 
 # PDFs in root directory
 *.pdf
+
+# XLS data (not yet converted to CSV)
+*.xls
+*.xlsx
+
