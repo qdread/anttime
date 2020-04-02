@@ -1,0 +1,211 @@
+species,genus,specific_location,region,Lat,Lon,MAT,season,rate_temperature_change,caste,nest_site,microclim_habitat,substrate,habitat_coverage,CTmax,CTmin
+Aphaenogaster carolinensis,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.7,6.3
+Aphaenogaster carolinensis,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.3,6
+Aphaenogaster carolinensis,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45,6.1
+Aphaenogaster carolinensis,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.3,6
+Aphaenogaster carolinensis,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.6,6
+Aphaenogaster fulva,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.1,6.4
+Aphaenogaster fulva,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44,6
+Aphaenogaster fulva,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.2,6.1
+Aphaenogaster fulva,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.2,6.5
+Aphaenogaster fulva,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.1,6.3
+Aphaenogaster lamellidens,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.7,5.5
+Aphaenogaster lamellidens,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45,5.8
+Aphaenogaster lamellidens,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45,6
+Aphaenogaster lamellidens,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.9,5.6
+Aphaenogaster lamellidens,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.2,6
+Aphaenogaster rudis,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.7,5.2
+Aphaenogaster rudis,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.8,5.5
+Aphaenogaster rudis,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.5,5.5
+Aphaenogaster rudis,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.7,5.6
+Aphaenogaster rudis,Aphaenogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.8,5.5
+Brachyponera chinensis,Brachyponera,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,logs,ground,soil,forest_open,40.5,7.5
+Brachyponera chinensis,Brachyponera,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,logs,ground,soil,forest_open,40.3,7.6
+Brachyponera chinensis,Brachyponera,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,logs,ground,soil,forest_open,40.5,7.7
+Brachyponera chinensis,Brachyponera,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,logs,ground,soil,forest_open,40.5,7.4
+Brachyponera chinensis,Brachyponera,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,logs,ground,soil,forest_open,40.7,7.5
+Camponotus americanus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.4,7
+Camponotus americanus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.3,7.3
+Camponotus americanus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43,7.1
+Camponotus americanus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.2,7
+Camponotus americanus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43,7
+Camponotus castaneus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.3,6.8
+Camponotus castaneus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.4,7.1
+Camponotus castaneus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.3,6.9
+Camponotus castaneus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.1,7
+Camponotus castaneus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.4,7
+Camponotus pennsylvannicus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.5,6.6
+Camponotus pennsylvannicus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.5,6.9
+Camponotus pennsylvannicus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.5,6.8
+Camponotus pennsylvannicus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.3,6.8
+Camponotus pennsylvannicus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43,6.7
+Camponotus subbarbatus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,41.4,6.6
+Camponotus subbarbatus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.3,6.9
+Camponotus subbarbatus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.3,6.8
+Camponotus subbarbatus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42,6.5
+Camponotus subbarbatus,Camponotus,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42,6.5
+Crematogaster lineolata,Crematogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,46,6.6
+Crematogaster lineolata,Crematogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,46,6.4
+Crematogaster lineolata,Crematogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.8,6.4
+Crematogaster lineolata,Crematogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,46.2,6.5
+Crematogaster lineolata,Crematogaster,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,46,6.5
+Formica pallidefulva,Formica,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,46.3,6
+Formica pallidefulva,Formica,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,46.1,5.8
+Formica pallidefulva,Formica,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.8,5.7
+Formica pallidefulva,Formica,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.7,6.1
+Formica pallidefulva,Formica,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,46.2,5.7
+Formica subsericea,Formica,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.5,6
+Formica subsericea,Formica,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.3,6.3
+Formica subsericea,Formica,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.6,6.3
+Formica subsericea,Formica,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.2,6.2
+Formica subsericea,Formica,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.1,6.2
+Lasius alienus,Lasius,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.4,4.4
+Lasius alienus,Lasius,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.4,4.6
+Lasius alienus,Lasius,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.5,4.6
+Lasius alienus,Lasius,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.1,4.7
+Lasius alienus,Lasius,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.3,4.4
+Linepithema humile,Linepithema,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground,ground,soil,forest_open,42.8,6.8
+Linepithema humile,Linepithema,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground,ground,soil,forest_open,43,6.9
+Linepithema humile,Linepithema,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground,ground,soil,forest_open,43.2,7.1
+Linepithema humile,Linepithema,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground,ground,soil,forest_open,43,7.2
+Linepithema humile,Linepithema,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground,ground,soil,forest_open,42.9,7.2
+Monomorium minimum,Monomorium,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_soil,ground,soil,forest_open,45,5
+Monomorium minimum,Monomorium,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_soil,ground,soil,forest_open,45.1,4.8
+Monomorium minimum,Monomorium,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_soil,ground,soil,forest_open,45.2,4.9
+Monomorium minimum,Monomorium,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_soil,ground,soil,forest_open,45,5.3
+Monomorium minimum,Monomorium,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_soil,ground,soil,forest_open,44.8,5.2
+Myrmecina americana,Myrmecina,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,41.8,6
+Myrmecina americana,Myrmecina,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.3,6.1
+Myrmecina americana,Myrmecina,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.1,6.2
+Myrmecina americana,Myrmecina,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42,6.2
+Myrmecina americana,Myrmecina,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,41.9,6.2
+Nylanderia faisonensis,Nylanderia,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.5,5.6
+Nylanderia faisonensis,Nylanderia,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.3,5.4
+Nylanderia faisonensis,Nylanderia,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.8,5.5
+Nylanderia faisonensis,Nylanderia,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44,5.6
+Nylanderia faisonensis,Nylanderia,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.2,5.6
+Pheidole sp.,Pheidole,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44,7
+Pheidole sp.,Pheidole,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.3,7.1
+Pheidole sp.,Pheidole,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.2,6.8
+Pheidole sp.,Pheidole,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44,6.8
+Pheidole sp.,Pheidole,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44,7.2
+Ponera pennsylvanica,Ponera,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.6,3.4
+Ponera pennsylvanica,Ponera,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.1,3.4
+Ponera pennsylvanica,Ponera,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.7,3.1
+Ponera pennsylvanica,Ponera,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.7,3.3
+Ponera pennsylvanica,Ponera,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,42.8,3.4
+Prenolepis imparis,Prenolepis,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,41.1,2.6
+Prenolepis imparis,Prenolepis,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,41,2.7
+Prenolepis imparis,Prenolepis,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,40.7,2.5
+Prenolepis imparis,Prenolepis,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,40.5,2.4
+Prenolepis imparis,Prenolepis,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,40.5,2.4
+Solenopsis molesta,Solenopsis,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.5,4
+Solenopsis molesta,Solenopsis,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.4,4.3
+Solenopsis molesta,Solenopsis,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,43.9,4
+Solenopsis molesta,Solenopsis,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.6,4
+Solenopsis molesta,Solenopsis,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,44.2,4.1
+Stenamma impar,Stenamma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,41.3,4.1
+Stenamma impar,Stenamma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,41.5,3.7
+Stenamma impar,Stenamma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,41.6,4
+Stenamma impar,Stenamma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,41.2,4
+Stenamma impar,Stenamma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,41.4,4
+Stenamma schmittii,Stenamma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,40.8,4.4
+Stenamma schmittii,Stenamma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,41.2,4.2
+Stenamma schmittii,Stenamma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,41,4.3
+Stenamma schmittii,Stenamma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,41,4.2
+Stenamma schmittii,Stenamma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,41,4.2
+Stigmatomma pallipes,Stigmatomma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,40.6,5
+Stigmatomma pallipes,Stigmatomma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,40.7,5.3
+Stigmatomma pallipes,Stigmatomma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,41,5.2
+Stigmatomma pallipes,Stigmatomma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,40.6,5.2
+Stigmatomma pallipes,Stigmatomma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,40.3,5
+Tapinoma sessile,Tapinoma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,45.5,5.8
+Tapinoma sessile,Tapinoma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,45.1,6.3
+Tapinoma sessile,Tapinoma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,45.4,6
+Tapinoma sessile,Tapinoma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,45.5,6
+Tapinoma sessile,Tapinoma,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,ground_litter,ground,soil,forest_open,45.8,6
+Temnothorax curvispinosus,Temnothorax,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_acorns,ground,soil,forest_open,46.3,5.2
+Temnothorax curvispinosus,Temnothorax,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_acorns,ground,soil,forest_open,46.3,5.4
+Temnothorax curvispinosus,Temnothorax,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_acorns,ground,soil,forest_open,45.8,5.3
+Temnothorax curvispinosus,Temnothorax,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_acorns,ground,soil,forest_open,46.5,5.3
+Temnothorax longispinosus,Temnothorax,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_acorns,ground,soil,forest_open,44,4.6
+Temnothorax longispinosus,Temnothorax,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_acorns,ground,soil,forest_open,43.9,4.7
+Temnothorax longispinosus,Temnothorax,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_acorns,ground,soil,forest_open,44.4,4.6
+Temnothorax longispinosus,Temnothorax,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_acorns,ground,soil,forest_open,43.8,4.6
+Temnothorax longispinosus,Temnothorax,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_acorns,ground,soil,forest_open,44.2,4.6
+Temnothorax curvispinosus,Temnothorax,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,litter_acorns,ground,soil,forest_open,46.5,5.2
+Tetramorium caespitum,Tetramorium,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.8,5.6
+Tetramorium caespitum,Tetramorium,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.4,5.5
+Tetramorium caespitum,Tetramorium,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,46,5.7
+Tetramorium caespitum,Tetramorium,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.7,6
+Tetramorium caespitum,Tetramorium,"Duke Forest, NC, USA",NC,36.007482,-79.040724,14.6,May,1 C / 1 min,worker,soil,ground,soil,forest_open,45.9,6
+Aphaenogaster picea,Aphaenogaster,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest,39.2,-0.6
+Aphaenogaster picea,Aphaenogaster,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39.2,-0.7
+Aphaenogaster picea,Aphaenogaster,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39,-0.7
+Aphaenogaster picea,Aphaenogaster,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39,-0.8
+Aphaenogaster picea,Aphaenogaster,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,38.8,-1
+Aphaenogaster rudis,Aphaenogaster,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.7,July,1 C / 1 min,worker,soil,ground,soil,forest_open,41.6,1
+Aphaenogaster rudis,Aphaenogaster,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.7,July,1 C / 1 min,worker,soil,ground,soil,forest_open,41.7,0.9
+Aphaenogaster rudis,Aphaenogaster,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.7,July,1 C / 1 min,worker,soil,ground,soil,forest_open,41.7,0.7
+Aphaenogaster rudis,Aphaenogaster,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.7,July,1 C / 1 min,worker,soil,ground,soil,forest_open,41.5,0.8
+Aphaenogaster rudis,Aphaenogaster,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.7,July,1 C / 1 min,worker,soil,ground,soil,forest_open,41.8,0.9
+Camponotus nearcticus,Camponotus,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39.5,3.5
+Camponotus nearcticus,Camponotus,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,40,3.6
+Camponotus nearcticus,Camponotus,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39.7,3.6
+Camponotus nearcticus,Camponotus,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39.8,3.4
+Camponotus nearcticus,Camponotus,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39.8,3.5
+Camponotus pennsylvannicus,Camponotus,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,41.3,4
+Camponotus pennsylvannicus,Camponotus,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,41.4,3.7
+Camponotus pennsylvannicus,Camponotus,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,41,3.8
+Camponotus pennsylvannicus,Camponotus,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,41.2,3.8
+Camponotus pennsylvannicus,Camponotus,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,41.2,3.7
+Formica subintegra,Formica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39.1,3
+Formica subintegra,Formica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39.3,3
+Formica subintegra,Formica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39,2.9
+Formica subintegra,Formica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,38.9,3.1
+Formica subintegra,Formica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,forest_open,39.2,3.1
+Formica subsericea,Formica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,rock,ground,rock,open,41.3,3
+Formica subsericea,Formica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,rock,ground,rock,open,41.3,3.1
+Formica subsericea,Formica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,rock,ground,rock,open,41.6,2.8
+Formica subsericea,Formica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,rock,ground,rock,open,41,2.9
+Formica subsericea,Formica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,rock,ground,rock,open,41,3
+Lasius alienus,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,sand,open,38,1.5
+Lasius alienus,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,sand,open,38.4,1.3
+Lasius alienus,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,sand,open,38.5,1.6
+Lasius alienus,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,sand,open,38,1.5
+Lasius alienus,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,sand,open,38,1.4
+Lasius nearcticus,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground,ground,soil,open,37,1.3
+Lasius nearcticus,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground,ground,soil,open,37.4,1.4
+Lasius nearcticus,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground,ground,soil,open,36.9,1.5
+Lasius nearcticus,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground,ground,soil,open,37,1.1
+Lasius nearcticus,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground,ground,soil,open,37,1.1
+Lasius neoniger,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground,ground,sand,open,38.1,1.2
+Lasius neoniger,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground,ground,sand,open,37.7,1
+Lasius neoniger,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground,ground,sand,open,38,1
+Lasius neoniger,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground,ground,sand,open,38.2,1
+Lasius neoniger,Lasius,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground,ground,sand,open,38.1,0.8
+Myrmica punctaventris,Myrmica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,litter_soil,ground,soil,open,40.4,2.8
+Myrmica punctaventris,Myrmica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,litter_soil,ground,soil,open,40,2.9
+Myrmica punctaventris,Myrmica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,litter_soil,ground,soil,open,39.8,3
+Myrmica punctaventris,Myrmica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,litter_soil,ground,soil,open,40,3.1
+Myrmica punctaventris,Myrmica,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,litter_soil,ground,soil,open,40,3
+Prenolepis imparis,Prenolepis,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,open,35.7,-1.8
+Prenolepis imparis,Prenolepis,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,open,35.7,-2
+Prenolepis imparis,Prenolepis,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,open,35.6,-2
+Prenolepis imparis,Prenolepis,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,open,35.6,-2
+Prenolepis imparis,Prenolepis,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,soil,ground,soil,open,35.8,-2
+Stenamma sp.,Stenamma,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,39,2.4
+Stenamma sp.,Stenamma,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,39.2,2.5
+Stenamma sp.,Stenamma,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,39.1,2.6
+Stenamma sp.,Stenamma,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,39.4,2.6
+Stenamma sp.,Stenamma,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,39.3,2.5
+Tapinoma sessile,Tapinoma,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,42.3,2
+Tapinoma sessile,Tapinoma,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,42.3,2
+Tapinoma sessile,Tapinoma,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,41.8,2.1
+Tapinoma sessile,Tapinoma,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,41.8,2
+Tapinoma sessile,Tapinoma,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,42,1.8
+Temnothorax longispinosus,Temnothorax,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,43.8,4
+Temnothorax longispinosus,Temnothorax,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,43.8,4.1
+Temnothorax longispinosus,Temnothorax,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,43.5,4
+Temnothorax longispinosus,Temnothorax,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,43.2,3.8
+Temnothorax longispinosus,Temnothorax,"Harvard Forest, Petersham, MA, USA",MA,42.508422,-72.20786,7.2,July,1 C / 1 min,worker,ground_litter,ground,soil,open,43.5,3.8

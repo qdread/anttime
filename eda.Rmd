@@ -1,7 +1,7 @@
 ---
 title: "Exploration of ant foraging data"
 author: "Quentin D. Read"
-date: "February 24, 2020"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
 output: pdf_document
 ---
 

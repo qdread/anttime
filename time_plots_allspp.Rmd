@@ -1,0 +1,130 @@
+---
+title: "Foraging by time plots by site, species, and season"
+author: "Quentin D. Read"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+# Contents
+
+This is a document for exploratory data analysis, with all the possible plots of number of foraging observations by time (across 24 hours) by site (Duke Forest and Harvard Forest) and by species (the 10 most common species at Duke Forest, and the 3 most common species at Harvard Forest). For Duke Forest observations, I plot all dates together, then separate plots for summer (April-July) and winter (October-February). All Harvard Forest observations are from June-August so I did not split them up by season. The histograms are all plotted with density (rather than the raw counts of individuals) on the y-axis, to make it easier to compare chambers with different background relative abundance of ants.
+
+# My thoughts
+
+Based on this, I would say first of all that Harvard Forest has too few species and observations to be useful. It looks like the only viable way forward is to analyze Duke Forest only. 
+
+In terms of summer vs. winter, we might be able to say that *Prenolepis imparis* has more of a pattern where it avoids midday and afternoon in the hotter chambers in summer. It is still showing up a little bit in winter. The only other species that was observed in any meaningful numbers in the winter was *A. rudis*, which really only showed up in a couple of the chambers in winter. So it's probably better to either not use the winter observations or pool them in with summer.
+
+Looking at all the species, I don't visually see super strong evidence that there is that much of a treatment effect, other than for *P. imparis*, but I think a lot of that might be noise. Maybe *Crematogaster lineolata* is shifting more to nighttime in the hotter chambers? Anything past that, I either see no difference among the treatments, or there are too few observations to tell.
+
+
+
+```{r load and wrangle data}
+library(tidyverse)
+theme_set(theme_minimal() +
+            theme(legend.position = 'none'))
+
+trt <- read_csv('data/chamber_treatments.csv')
+dat <- read_csv('data/data_allmonths_allsites.csv')
+spp <- read_csv('data/species_lookup.csv')
+
+# Create a new column in treatment with the temp and chamber ID
+# Order it by the temperature so the plots are in ascending temp order
+trt <- trt %>%
+  mutate(chamber_temp = paste0('chamber ', chamber, ': +', temperature, 'C')) %>%
+  mutate(chamber_temp = factor(chamber_temp, levels = unique(chamber_temp)[order(site, temperature)]))
+
+# Do the same data cleaning as the other script
+# Convert month to ordered factor and join with treatment
+dat <- dat %>%
+  filter(!spp %in% c('none','unk'), !is.na(spp)) %>%
+  mutate(month = factor(month, levels = month.name)) %>%
+  left_join(trt)
+
+# Additional data wrangling:
+# Convert to long form with one row per individual ant observed.
+dat_long <- dat %>%
+  group_by(site, month, date, time, chamber, temperature, chamber_temp) %>%
+  group_modify(~ data.frame(sp = rep(.$spp, each = .$number)))
+
+# Filter the data to show only species with at least 100 individuals
+dat_common <- dat_long %>%
+  filter(!is.na(temperature)) %>%
+  group_by(sp) %>%
+  filter(n() >= 100)
+
+# Set color palette for all species
+sp_descend <- dat_common %>% summarize(n=n()) %>% arrange(-n) %>% pull(sp)
+fill_palette <- scale_fill_manual(values = setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
+
+# Define seasons
+dat_common <- dat_common %>%
+  mutate(season = if_else(month %in% month.name[4:9], 'summer', 'winter')) 
+
+# Add dummy data so all panels will plot
+dummy_data <- dat_common %>%
+  group_by(site,season,chamber_temp,sp) %>%
+  slice(1) %>%
+  mutate(time = -1) %>% 
+  ungroup
+
+sp_season <- expand_grid(sp = sp_descend, season = c('summer','winter'))
+dummy_data <- dat_common %>% 
+  ungroup %>% 
+  select(site, chamber_temp) %>% 
+  unique %>%
+  group_by(site, chamber_temp) %>% group_modify(~ data.frame(sp_season))
+
+
+dat_common <- bind_rows(dat_common, dummy_data)
+```
+
+# Duke Forest
+
+```{r duke histograms, results='asis'}
+for (sp_i in sp_descend){
+  sp_name <- spp$species[which(spp$sp == sp_i)]
+  cat('\n')  
+  cat("## ", sp_name, "\n") 
+  for (the_season in list('summer','winter',c('summer','winter'))) {
+    
+    plot_title <- ifelse(length(the_season) == 1, the_season, 'summer+winter combined')  
+    
+    print(ggplot(dat_common %>% filter(site == 'Duke', sp == sp_i, season %in% the_season), 
+                 aes(x = time, y = stat(density), group = sp, fill = sp)) +
+            geom_histogram(binwidth = 1, position = 'identity', alpha = 0.5, color = 'black') +
+            scale_x_continuous(limits = c(0,23)) +
+            facet_wrap(~ chamber_temp, scales = 'free_y') +
+            fill_palette +
+            ggtitle(plot_title)
+    ) 
+  }
+  cat('\n') 
+}
+```
+
+# Harvard Forest
+
+```{r harvard histograms, results='asis'}
+for (sp_i in c('cape','apru','fosu')){
+  sp_name <- spp$species[which(spp$sp == sp_i)]
+  cat('\n')  
+  cat("## ", sp_name, "\n") 
+  
+  
+  print(ggplot(dat_common %>% filter(site == 'Harvard', sp == sp_i, season %in% the_season), 
+               aes(x = time, y = stat(density), group = sp, fill = sp)) +
+          geom_histogram(binwidth = 1, position = 'identity', alpha = 0.5, color = 'black') +
+          scale_x_continuous(limits = c(0,23)) +
+          facet_wrap(~ chamber_temp, scales = 'free_y') +
+          fill_palette +
+          ggtitle('summer')
+  ) 
+  
+  cat('\n') 
+}
+```
