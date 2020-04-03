@@ -7,12 +7,18 @@ output: pdf_document
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, tidy = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, tidy = FALSE)
 ```
 
-In this document, I will calculate T-statistics (see Violle et al.) and O-statistics (see Read et al.) for the Duke Forest and Harvard Forest ants. Both may yield some kind of interesting insight. Later I might also calculate the pairwise "earth-moving distance" between pairs of species, which could also be interesting.
+## Summary
+
+In this document, I calculate T-statistics (see Violle et al. 2012) and O-statistics (see Read et al. 2018) for the Duke Forest and Harvard Forest ants. I only show results from Duke Forest because Harvard Forest has too few species to calculate meaningful statistics.
+
+I would say, based on these results, there is no discernible trend of foraging time niche overlap among species with temperature. It's about the same across all the chambers at the Duke Forest site. This may at least partially be due to the low power to detect an effect in a noisy system with 12 data points, but it certainly provides no evidence that the community-wide time niche structure of ants is changing with warming. We may later find that individual species have contracted, expanded, or shifted their niches, but there is no trend in overlap per se.
 
 ## Load data
+
+For any statistics being done on foraging time, we need to transform it using $\cos(\frac{2\pi t}{24})$, which results in a value of 1 for 0 and 24 (midnight), and a value of -1 for 12 (noon). This deals with the circularity issue.
 
 ```{r load and wrangle data, message = FALSE}
 library(tidyverse)
@@ -25,19 +31,21 @@ dat <- read_csv('data/data_allmonths_allsites.csv')
 # Order it by the temperature so the plots are in ascending temp order
 trt <- trt %>%
   mutate(chamber_temp = paste0('chamber ', chamber, ': +', temperature, 'C')) %>%
-  mutate(chamber_temp = factor(chamber_temp, levels = unique(chamber_temp)[order(site, temperature)]))
+  mutate(chamber_temp = factor(chamber_temp, 
+                               levels = unique(chamber_temp)[order(site, temperature)]))
 
-# Do the same data cleaning as the other script
-# Convert month to ordered factor and join with treatment
+# Do cosine transformation on time
+# Also convert month to ordered factor and join with treatment
 dat <- dat %>%
   filter(!spp %in% c('none','unk'), !is.na(spp)) %>%
-  mutate(month = factor(month, levels = month.name)) %>%
+  mutate(cos_time = cos(time * pi/12),
+         month = factor(month, levels = month.name)) %>%
   left_join(trt)
 
 # Additional data wrangling:
 # Convert to long form with one row per individual ant observed.
 dat_long <- dat %>%
-  group_by(site, month, date, time, chamber, temperature, chamber_temp) %>%
+  group_by(site, month, date, time, cos_time, chamber, temperature, chamber_temp) %>%
   group_modify(~ data.frame(sp = rep(.$spp, each = .$number)))
 
 # Filter the data to show only species with at least 100 individuals
@@ -65,13 +73,16 @@ These are very ugly right now but I will improve that later.
 
 # Set color palette for all species
 sp_descend <- dat_common %>% summarize(n=n()) %>% arrange(-n) %>% pull(sp)
-fill_palette <- scale_fill_manual(values = setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
-color_palette <- scale_color_manual(values = setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
+fill_palette <- scale_fill_manual(values = 
+  setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
+color_palette <- scale_color_manual(values = 
+  setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
 
 # Duke Forest
 ggplot(dat_common %>% filter(site == 'Duke'), 
        aes(x = time, group = sp, fill = sp)) +
-  geom_histogram(binwidth = 1, position = 'identity', alpha = 0.5, color = 'black') +
+  geom_histogram(binwidth = 1, position = 'identity', 
+                 alpha = 0.5, color = 'black') +
   facet_wrap(~ chamber_temp, scales = 'free_y') +
   fill_palette +
   ggtitle('Duke Forest')
@@ -79,7 +90,8 @@ ggplot(dat_common %>% filter(site == 'Duke'),
 # Harvard Forest
 ggplot(dat_common %>% filter(site == 'Harvard'), 
        aes(x = time, group = sp, fill = sp)) +
-  geom_histogram(binwidth = 1, position = 'identity', alpha = 0.5, color = 'black') +
+  geom_histogram(binwidth = 1, position = 'identity', 
+                 alpha = 0.5, color = 'black') +
   facet_wrap(~ chamber_temp, scales = 'free_y') +
   fill_palette +
   ggtitle('Harvard Forest')
@@ -91,7 +103,8 @@ You can also plot the histograms using density instead of the raw counts. This m
 # Duke Forest
 ggplot(dat_common %>% filter(site == 'Duke'), 
        aes(x = time, y = stat(density), group = sp, fill = sp)) +
-  geom_histogram(binwidth = 1, position = 'identity', alpha = 0.5, color = 'black') +
+  geom_histogram(binwidth = 1, position = 'identity', 
+                 alpha = 0.5, color = 'black') +
   facet_wrap(~ chamber_temp, scales = 'free_y') +
   fill_palette +
   ggtitle('Duke Forest')
@@ -99,45 +112,38 @@ ggplot(dat_common %>% filter(site == 'Duke'),
 # Harvard Forest
 ggplot(dat_common %>% filter(site == 'Harvard'), 
        aes(x = time, y = stat(density), group = sp, fill = sp)) +
-  geom_histogram(binwidth = 1, position = 'identity', alpha = 0.5, color = 'black') +
+  geom_histogram(binwidth = 1, position = 'identity', 
+                 alpha = 0.5, color = 'black') +
   facet_wrap(~ chamber_temp, scales = 'free_y') +
   fill_palette +
   ggtitle('Harvard Forest')
 ```
 
-### Individual histograms of the most abundant species
-
-It looks to me as if Prenolepis may actually be shifting its behavior somewhat to avoid the hottest hours of the later afternoon in the warming treatment in Duke Forest. This isn't the case in all the warming treatments but in several of the treatments, there are practically none of them out at the hottest time of day, where you see no such gap in the ambient chambers. I don't see anything similar at Harvard Forest.
-
-```{r prim histogram}
-ggplot(dat_common %>% filter(site == 'Duke', sp == 'prim'), 
-       aes(x = time, y = stat(density))) +
-  geom_histogram(binwidth = 1, position = 'identity', alpha = 0.5, color = 'black', fill = 'red') +
-  facet_wrap(~ temperature) 
-  
-```
-
-## Overlap statistics
+## Community-level overlap statistics
 
 The O-statistic is calculated for a local community by finding the pairwise niche overlap of each pair of species in the community, and from that finding some measure of "average" overlap (mean or median). You can either analyze the raw O-statistic or use a null model approach to calculate the standardized effect size of the O-statistic against a null distribution. The latter approach tells you how much more or less overlap you get among species, versus the situation where individuals have random traits that don't depend on their species identity.
 
 A first question we could ask is whether the degree of niche overlap is different among chambers. I would naively hypothesize that it would increase with warming. If ants are being forced to forage at a smaller window of time, because more hours in the day are unsuitably hot for them to be active, we might see more overlap.
 
-For Duke Forest, I am going to use the 10 most common species. Harvard Forest is a difficult situation because most chambers only have two species. So we might just have to use that pair's overlap. It might be that this isn't really testable at Harvard Forest.
+For Duke Forest, I am going to use the 10 most common species. Harvard Forest is a difficult situation because most chambers only have two species in any numbers. I am not going to show results from Harvard Forest from now on because we just don't have the sample size to say anything about it.
 
 There are a few different options for calculating the O-statistic, one accounts for abundance of the species and weights the mean or median toward the most abundant species. Also, you can use the raw histograms or the normalized histograms. I will try the different ones out and see whether it matters.
 
 I made a very minimalist R package called `Ostats` for the O-statistics so that it is easy to load all the functions whenever you need to run them. For anyone who wants to follow along, you can install the package by calling `devtools::install_github('NEON-biodiversity/Ostats')`. Here the null model is run with only 99 permutations to save time but later I can add more.
 
-```{r calculate O-stats}
+```{r calculate O-stats, message = FALSE, results = 'hide'}
 library(Ostats)
 
 Ostats_ants_raw <- with(dat_common,
-                    Ostats(as.matrix(time), interaction(site, chamber), factor(sp),
-                           nperm = 99, shuffle_weights = FALSE, swap_means = TRUE))
+                    Ostats(as.matrix(cos_time), 
+                           interaction(site, chamber), 
+                           factor(sp),
+                           nperm = 99, 
+                           shuffle_weights = FALSE, 
+                           swap_means = TRUE))
 
 # Put them into a data frame
-dimnames(Ostats_ants_raw[[1]])[[2]] <- 'time'
+dimnames(Ostats_ants_raw[[1]])[[2]] <- 'cos_time'
 Ostats_ants <- Ostat2longform(Ostats_ants_raw)
 
 # Combine this with the treatment information
@@ -147,28 +153,31 @@ Ostats_ants <- Ostats_ants %>%
   mutate(chamber = as.numeric(chamber)) %>%
   left_join(trt)
 
+# Use only Duke Forest
+Ostats_Duke <- Ostats_ants %>%
+  filter(site == 'Duke')
+
 ```
 
-What are the trends of overlap statistics? Is there any trend with temperature? I would say from the figure, not at all. The vertical lines are the null distributions. So most of the chambers at Duke Forest have somewhat higher overlap than expected by chance from an extremely naive null model that just randomly jumbles everything. If you convert the raw statistic to the effect size relative to the null distribution, you get a modest trend where the observed overlap relative to the chance expectation gets lower, though likely insignificantly so (a quick test shows p = 0.23). This might provide a little evidence for a shift if it were significant, but I would say it isn't. So there is no overall change in niche overlap with temperature. 
+What are the trends of overlap statistics? Is there any trend with temperature? I would say from the figure, not at all. The vertical lines are the null distributions. So most of the chambers at Duke Forest have no more, or slightly higher, overlap than expected by chance from an extremely naive null model that just randomly jumbles everything. If you convert the raw statistic to the effect size relative to the null distribution, you still see basically no trend with temperature.
 
 ```{r plot O-stats}
-ggplot(Ostats_ants, aes(x = temperature, y = ostat_norm)) +
+ggplot(Ostats_Duke, aes(x = temperature, y = ostat_norm)) +
   geom_smooth(method = 'lm', color = 'black') +
-  geom_point(aes(color = site)) +
-  geom_segment(aes(xend = temperature, y = ostat_norm_localnull_lower, yend = ostat_norm_localnull_upper)) +
-  facet_wrap(~ site) +
-  theme(legend.position = 'none') +
+  geom_point() +
+  geom_segment(aes(xend = temperature, 
+                   y = ostat_norm_localnull_lower, 
+                   yend = ostat_norm_localnull_upper)) +
   ggtitle('Raw overlap statistics')
 
-ggplot(Ostats_ants, aes(x = temperature, y = ostat_norm_localnull_ses)) +
+ggplot(Ostats_Duke, aes(x = temperature, y = ostat_norm_localnull_ses)) +
   geom_smooth(method = 'lm', color = 'black') +
-  geom_point(aes(color = site)) +
-  facet_wrap(~ site, scales = 'free_y') +
-  theme(legend.position = 'none') +
+  geom_point() +
   ggtitle('Overlap statistics effect size versus null model')
 
 ```
 
+## Individual-level pairwise overlaps
 
 We also want to calculate the underlying pairwise overlaps so that we can look at each species pair and whether their overlaps change with the treatments. The following code calculates the overlap for all pairs separately and then plots each species pair versus temperature. That's a lot of different trends but the question might be if one species in particular overlaps more or less with other species as a function of temperature.
 
@@ -186,13 +195,21 @@ all_pairs <- function(traits, sp, norm = TRUE, bw = NULL, n = NULL) {
   traitlist <- split(dat$traits, dat$sp)
   nspp <- length(traitlist)
 
-  if (nspp < 2) return(data.frame(sp1 = character(0), sp2 = character(0), overlap = numeric(0)))
+  if (nspp < 2) return(data.frame(sp1 = character(0), 
+                                  sp2 = character(0), 
+                                  overlap = numeric(0)))
 
   overlaps <- list()
   
   for (sp_a in 1:nspp) {
     for (sp_b in 1:nspp) {
-      overlaps[[length(overlaps) + 1]] <- list(sp1 = spp[sp_a], sp2 = spp[sp_b], overlap = pairwise_overlap(a = traitlist[[sp_a]], b = traitlist[[sp_b]], norm = norm, bw = bw, n = n)[1])
+      overlaps[[length(overlaps) + 1]] <- 
+        list(sp1 = spp[sp_a], sp2 = spp[sp_b], 
+             overlap = pairwise_overlap(a = traitlist[[sp_a]], 
+                                        b = traitlist[[sp_b]], 
+                                        norm = norm, 
+                                        bw = bw, 
+                                        n = n)[1])
     }
   }
   
@@ -202,7 +219,7 @@ all_pairs <- function(traits, sp, norm = TRUE, bw = NULL, n = NULL) {
 # Calculate the overlaps
 overlaps_allpairs <- dat_common %>%
   group_by(site, chamber, temperature, chamber_temp) %>%
-  group_modify(~ all_pairs(.$time, .$sp)) %>%
+  group_modify(~ all_pairs(.$cos_time, .$sp)) %>%
   filter(sp1 != sp2)
   
 
@@ -210,11 +227,71 @@ overlaps_allpairs <- dat_common %>%
 
 ```{r plot overlaps}
 
-ggplot(overlaps_allpairs %>% filter(site == 'Duke'), aes(x = temperature, y = overlap, group = sp2, color = sp2)) +
+ggplot(overlaps_allpairs %>% filter(site == 'Duke'), 
+       aes(x = temperature, y = overlap, group = sp2, color = sp2)) +
   facet_wrap(~ sp1) +
   geom_point(size = 2) + 
   geom_smooth(method = 'lm', se = FALSE) +
   color_palette
 ```
 
-Based on this, it looks like most species do not show a trend, but possibly *F. pallidefulva* is overlapping more in time with most other species as it warms, while *N. faisonensis* is overlapping less. These are the two rarest species though, so it's probably not going to be significant -- not a good sign if the biggest effect is in the one with the smallest sample size, probably means it's due to random chance.
+Based on this, it looks like most pairs don't show a trend with temperature, and no individual species really seems to stand out in terms of being more likely to have either positive or negative overlap trends with other species.
+
+## T-statistics (trait statistics)
+
+Just for completeness, I also calculated the T-statistics for the chambers. They first came out in 2011 from Brian McGill's group (violle et al. 2011), and were designed to be analogous to F-statistics from population genetics. There are three main ones:
+
+* $T_{IP/IC}$ : ratio of variance of individuals within species and variance of individuals in the community (chamber). This would be analogous to the overlap statistic and should be correlated to it.
+* $T_{IC/IR}$: the community-wide variance (where community = chamber) relative to the total variance in the regional pool (where region = study site), assessed at the individual level. 
+* $T_{PC/PR}$: the community-wide variance relative to the total variance in the regional pool, assessed via population-level means.
+
+The latter two are not really relevant here because the chambers are not really communities, they're just samples. So we don't really have multiple communities. But we can still look at the first one.
+
+```{r calculate T-stats, message = FALSE, results = 'hide'}
+library(cati)
+
+
+Tstats_ants_raw <- with(dat_common,
+                    Tstats(as.matrix(cos_time), 
+                           interaction(site, chamber), 
+                           factor(sp),
+                           nperm = 99,
+                           printprogress = FALSE))
+
+# Extract the T.IP/IC statistics and effect size vs null distribution
+TIPIC_ses <- ses(Tstats_ants_raw$Tstats$T_IP.IC, Tstats_ants_raw$Tstats$T_IP.IC_nm)
+
+# Put into a data frame
+Tstats_ants <- data.frame(site = row.names(Tstats_ants_raw$Tstats$T_IP.IC),
+                          TIPIC = Tstats_ants_raw$Tstats$T_IP.IC,
+                          ses = TIPIC_ses$ses,
+                          null_lower = TIPIC_ses$ses.inf,
+                          null_upper = TIPIC_ses$ses.sup)
+  
+
+# Combine this with the treatment information
+Tstats_ants <- Tstats_ants %>%
+  separate(site, into = c('site', 'chamber')) %>%
+  mutate(chamber = as.numeric(chamber)) %>%
+  left_join(trt)
+
+# Use only Duke Forest
+Tstats_Duke <- Tstats_ants %>%
+  filter(site == 'Duke')
+```
+
+Here are similar plots for T-statistics as I made for O-statistics above. Many of the chambers have a lower T-statistic than the null expectation, which basically just means that species have different traits. However there is no trend.
+
+```{r plot T-stats}
+ggplot(Tstats_Duke, aes(x = temperature, y = TIPIC)) +
+  geom_smooth(method = 'lm', color = 'black') +
+  geom_point() +
+  ggtitle('Raw T.IP/IC statistics')
+
+ggplot(Tstats_Duke, aes(x = temperature, y = ses)) +
+  geom_smooth(method = 'lm', color = 'black') +
+  geom_point() +
+  geom_segment(aes(xend = temperature, y = null_lower, yend = null_upper)) +
+  ggtitle('T-statistics effect size versus null model')
+
+```
