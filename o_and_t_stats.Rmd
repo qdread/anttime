@@ -16,6 +16,11 @@ In this document, I calculate T-statistics (see Violle et al. 2012) and O-statis
 
 I would say, based on these results, there is no discernible trend of foraging time niche overlap among species with temperature. It's about the same across all the chambers at the Duke Forest site. This may at least partially be due to the low power to detect an effect in a noisy system with 12 data points, but it certainly provides no evidence that the community-wide time niche structure of ants is changing with warming. We may later find that individual species have contracted, expanded, or shifted their niches, but there is no trend in overlap per se.
 
+## Changelog
+
+* **2 April 2020**: first version 
+* **3 April 2020**: add T-statistics
+
 ## Load data
 
 For any statistics being done on foraging time, we need to transform it using $\cos(\frac{2\pi t}{24})$, which results in a value of 1 for 0 and 24 (midnight), and a value of -1 for 12 (noon). This deals with the circularity issue.
@@ -236,6 +241,7 @@ ggplot(overlaps_allpairs %>% filter(site == 'Duke'),
 ```
 
 Based on this, it looks like most pairs don't show a trend with temperature, and no individual species really seems to stand out in terms of being more likely to have either positive or negative overlap trends with other species.
+
 
 ## T-statistics (trait statistics)
 

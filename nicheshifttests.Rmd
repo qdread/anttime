@@ -1,0 +1,104 @@
+---
+title: "Testing for species niche shifts"
+author: "Quentin D. Read"
+date: "4/6/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, tidy = FALSE)
+```
+
+## Summary
+
+Here, I calculated the pairwise distance between the foraging time distributions for all chambers, *within* species at each site. We can test individual pairs of chambers to see if the temporal niche distributions of the chambers are significantly different from each other, but that does not really address the hypothesis. What I did here is run a Mantel test, which is a statistical test to see whether two distance matrices are correlated. The question it answers here is: for each individual ant species, if two chambers are more similar in temperature, is the temporal niche distribution of the ants in those chambers more similar? I used two different measures of distance, one is 1 minus the overlap, the other is the "earth mover's distance" which is another way of looking at the distance between two distributions. Basically the answer is no. None of the tests are significant for earth mover's distance, and for overlap-based distance, only 1 of 12 tests is significant which you could get from chance alone. The significant one is *Crematogaster* at Duke Forest, which maybe is shifting from day to night a little bit as temperature increases? *Prenolepis* is moving a bit in that direction too but not significantly.
+
+## Load and clean data
+
+## Load data
+
+For any statistics being done on foraging time, we need to transform it using $\cos(\frac{2\pi t}{24})$, which results in a value of 1 for 0 and 24 (midnight), and a value of -1 for 12 (noon). This deals with the circularity issue.
+
+```{r load and wrangle data, message = FALSE}
+library(tidyverse)
+theme_set(theme_minimal())
+
+trt <- read_csv('data/chamber_treatments.csv')
+dat <- read_csv('data/data_allmonths_allsites.csv')
+
+# Create a new column in treatment with the temp and chamber ID
+# Order it by the temperature so the plots are in ascending temp order
+trt <- trt %>%
+  mutate(chamber_temp = paste0('chamber ', chamber, ': +', temperature, 'C')) %>%
+  mutate(chamber_temp = factor(chamber_temp, 
+                               levels = unique(chamber_temp)[order(site, temperature)]))
+
+# Do cosine transformation on time
+# Also convert month to ordered factor and join with treatment
+dat <- dat %>%
+  filter(!spp %in% c('none','unk'), !is.na(spp)) %>%
+  mutate(cos_time = cos(time * pi/12),
+         month = factor(month, levels = month.name)) %>%
+  left_join(trt)
+
+# Additional data wrangling:
+# Convert to long form with one row per individual ant observed.
+dat_long <- dat %>%
+  group_by(site, month, date, time, cos_time, chamber, temperature, chamber_temp) %>%
+  group_modify(~ data.frame(sp = rep(.$spp, each = .$number)))
+
+# Filter the data to show only species with at least 100 individuals
+dat_common <- dat_long %>%
+  filter(!is.na(temperature)) %>%
+  group_by(sp) %>%
+  filter(n() >= 100)
+
+# Set color palette for all species
+sp_descend <- dat_common %>% summarize(n=n()) %>% arrange(-n) %>% pull(sp)
+fill_palette <- scale_fill_manual(values = 
+  setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
+color_palette <- scale_color_manual(values = 
+  setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
+
+```
+
+
+## Overlap within species
+
+We can test whether species are significantly shifting their niches as temperature increases, ignoring other species, by testing the overlap among pairs within each species.
+
+```{r overlap within species calculation}
+# Define function to calculate overlap for all chambers within a species
+# Do it redundantly so that we can have all lines on all plots
+all_pairs_within_species <- function(x, plot, norm = TRUE, bw = NULL, n = NULL) {
+  dat <- data.frame(x=x, plot=plot, stringsAsFactors = FALSE)
+  traitlist <- split(dat$x, dat$plot)
+  nplots <- length(traitlist)
+  plots <- unique(dat$plot)
+
+  overlaps <- list()
+  
+  for (i in 1:nplots) {
+    for (j in 1:nplots) {
+      overlaps[[length(overlaps) + 1]] <- 
+        list(plot1 = plots[i], sp2 = plots[j], 
+             overlap = pairwise_overlap(a = traitlist[[i]], 
+                                        b = traitlist[[j]], 
+                                        norm = norm, 
+                                        bw = bw, 
+                                        n = n)[1])
+    }
+  }
+  
+  bind_rows(overlaps)
+}
+
+# filter input to get rid of any plots with not enough individuals of that species to test (say 5)
+niche_overlap_within_species <- dat_common %>%
+  group_by(site, sp, chamber) %>%
+  filter(n() >= 5) %>%
+  ungroup %>%
+  group_by(site, sp) %>%
+  group_modify(~ all_pairs_within_species(.$cos_time, .$chamber))
+
+```
