@@ -41,12 +41,41 @@ for (i in 1:11) {
   }
 }
 
+# Watson two-sample test (circular data)
+
+watson_crit_vals <- matrix(NA, nrow = 12, ncol = 12)
+watson_stats <- matrix(NA, nrow = 12, ncol = 12)
+
+# function to get critical value
+get_crit_value <- function(wtest) {
+  o <- capture.output(wtest)
+  as.numeric(strsplit(o[5], ' ')[[1]][5])
+}
+
+for (i in 1:11) {
+  pairs_i <- list()
+  for (j in (i+1):12) {
+    test <-  watson.two.test(x = circular(allchb$time[allchb$chamber == i], units = 'hours', template = 'clock24'),
+                             y = circular(allchb$time[allchb$chamber == j], units = 'hours', template = 'clock24'),
+                             alpha = 0.05)
+    pairs_i[[length(pairs_i) + 1]] <- test
+    
+    watson_crit_vals[i,j] <- get_crit_value(test)
+    watson_stats[i,j] <- test$statistic
+    
+  }
+  all_tests[[i]] <- pairs_i
+}
+
 # Loop KS and Chisq test for all pairs of chambers and all species
 
 test_fn <- function(x, y) {
   
   # KS test : no downsampling
   ks_result <- ks.test(x, y)
+  
+  # Watson two sample test
+  watson_result
   
   # Chi-square test : requires downsampling
   if (length(x) > length(y)) {
@@ -63,7 +92,8 @@ test_fn <- function(x, y) {
   data.frame(ks_statistic = ks_result$statistic,
              ks_p_val = ks_result$p.value,
              chisq_statistic = chisq_result$statistic,
-             chisq_p_val = chisq_result$p.value)
+             chisq_p_val = chisq_result$p.value,
+             watson_statistic = )
   
 }
 
@@ -125,12 +155,20 @@ library(emdist)
 
 # Create temperature distance matrix
 duke_temp_dist <- dist(trt$temperature[trt$site == 'Duke'])
+harvard_temp_dist <- dist(trt$temperature[trt$site == 'Harvard'])
 
 # 1 - overlap would be the distance between two distributions. 
 # Calculate this distance matrix for all species.
 # Give an option for earth mover's distance also
+# Edit April 20: convert all of this to circular.
 
-all_pairs_asmatrix <- function(traits, sp, norm = TRUE, bw = NULL, n = NULL, metric = c('overlap', 'emd')) {
+# Circular code courtesy of Kjetil Halvorsen
+# See https://stats.stackexchange.com/questions/461345/earth-movers-distance-implementation-for-circular-distributions
+hourdist <- function(A, B) sum(pmin(  (A-B)%%24, (B-A)%%24 ) )  
+
+
+all_pairs_asmatrix <- function(traits, sp, metric = c('overlap', 'emd')) {
+  require(emdist)
   dat <- data.frame(traits=traits, sp=sp, stringsAsFactors = FALSE)
   dat <- dat[complete.cases(dat), ]
   abunds <- table(dat$sp)
@@ -144,19 +182,16 @@ all_pairs_asmatrix <- function(traits, sp, norm = TRUE, bw = NULL, n = NULL, met
   
   for (sp_a in 1:(nspp-1)) {
     for (sp_b in (sp_a+1):nspp) {
+      a <- traitlist[[sp_a]]
+      b <- traitlist[[sp_b]]
+      density_a <- calc_weight(a)
+      density_b <- calc_weight(b)
       if (metric[1] == 'emd') {
-        distances[sp_a, sp_b] <- emd(
-          with(density(traitlist[[sp_a]]), cbind(y, x)),
-          with(density(traitlist[[sp_b]]), cbind(y, x))
-        )
+        distances[sp_a, sp_b] <- emd(density_a, density_b, dist = hourdist)       
       } 
       if (metric[1] == 'overlap') {
         distances[sp_a, sp_b] <- 
-          1 - pairwise_overlap(a = traitlist[[sp_a]], 
-                               b = traitlist[[sp_b]], 
-                               norm = norm, 
-                               bw = bw, 
-                               n = n)[1]
+          1 - circular_overlap_24hour(a, b)[1]
       }
     }
   }
@@ -164,6 +199,8 @@ all_pairs_asmatrix <- function(traits, sp, norm = TRUE, bw = NULL, n = NULL, met
   dimnames(distances) <- list(spp, spp)
   distances
 }
+
+
 
 # Calculate the overlaps
 overlap_mats <- dat_common %>%
@@ -173,9 +210,10 @@ overlap_mats <- dat_common %>%
   group_by(site, sp) %>%
   filter(length(unique(chamber)) > 1) %>%
   nest %>%
-  mutate(mat = map(data, ~ all_pairs_asmatrix(traits = .$cos_time, sp = .$chamber, metric = 'overlap')),
-         mat_emd = map(data, ~ all_pairs_asmatrix(traits = .$cos_time, sp = .$chamber, metric = 'emd')),
-         temp_dist = map(mat, ~ as.dist(as.matrix(duke_temp_dist)[as.numeric(row.names(.)), as.numeric(row.names(.))])),
+  mutate(temp_dist = if_else(site == 'Duke', list(duke_temp_dist), list(harvard_temp_dist))) %>%
+  mutate(mat = map(data, ~ all_pairs_asmatrix(traits = .$time, sp = .$chamber, metric = 'overlap')),
+         mat_emd = map(data, ~ all_pairs_asmatrix(traits = .$time, sp = .$chamber, metric = 'emd')),
+         temp_dist = map2(mat, temp_dist, ~ as.dist(as.matrix(.y)[as.numeric(row.names(.x)), as.numeric(row.names(.x))])),
          dist_overlap = map(mat, ~ as.dist(t(.))),
          dist_emd = map(mat_emd, ~ as.dist(t(.))))
 
@@ -190,8 +228,12 @@ overlap_mats <- overlap_mats %>%
 overlap_mats <- overlap_mats %>%
   mutate_at(vars(starts_with('mantel_test')), list(stat = ~ map_dbl(., 'obs'), p_val = ~ map_dbl(., 'pvalue')))
 
+# Show
+overlap_mats %>%
+  select(site, sp, contains('p_val'))
+
 # What is the trend of mean activity time for Crematogaster with temp
-# Take mean of cos time and back transform
+# Take mean in circular distribution
 mean_times <- dat_common %>%
   group_by(site, sp, chamber, temperature, chamber_temp) %>%
   summarize(mean_time = mean(circular(time, units = 'hours', modulo = '2pi')))
@@ -200,4 +242,35 @@ mean_times %>%
   filter(site == 'Duke') %>%
   ggplot(aes(x = temperature, y = mean_time)) +
   facet_wrap(~ sp, scales = 'free_y') +
-  geom_point()
+  geom_point() +
+  geom_smooth(method = 'lm')
+
+# Do a mixed model.
+library(lme4)
+
+# Random intercept and random slope model
+duke_mean_model <- lmer(mean_time ~ temperature + (temperature | sp), data = mean_times %>% filter(site == 'Duke'))
+
+summary(duke_mean_model)
+fixef(duke_mean_model)
+ranef(duke_mean_model)
+coef(duke_mean_model)
+
+# Do it Bayesian, silly
+library(brms)
+options(mc.cores = 2)
+duke_mean_bayesfit <- brm(mean_time ~ temperature + (temperature | sp), data = mean_times %>% filter(site == 'Duke'),
+                          chains = 2, iter = 2000, warmup = 1000)
+
+summary(duke_mean_bayesfit)
+fixef(duke_mean_bayesfit)
+ranef(duke_mean_bayesfit)
+coef(duke_mean_bayesfit)
+bayes_R2(duke_mean_bayesfit)
+
+library(brmstools)
+panels(duke_mean_bayesfit, grouping = 'sp', xvar = 'temperature')
+
+# Overall there is no effect of temperature. If we look at individual coefficient estimates the closest is A rudis going later, and P imparis going earlier. Both are only suggestive.
+
+
