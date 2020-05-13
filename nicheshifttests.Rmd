@@ -9,15 +9,24 @@ output: pdf_document
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, tidy = FALSE)
 ```
 
+## Change log
+
+* 13 May: update distributions in regression fits to work with circular data.
+* 6 May: change mean time to median time analysis, and use circular.
+* 4 May: add winter-only analysis.
+* 22 April: first version.
+
 ## Summary
 
 Here, I calculated the pairwise distance between the foraging time distributions for all chambers, *within* species at each site. We can test individual pairs of chambers to see if the temporal niche distributions of the chambers are significantly different from each other, but that does not really address the hypothesis. What I did here is run a Mantel test, which is a statistical test to see whether two distance matrices are correlated. The question it answers here is: for each individual ant species, if two chambers are more similar in temperature, is the temporal niche distribution of the ants in those chambers more similar? I used two different measures of distance, one is 1 minus the overlap, the other is the "earth mover's distance" which is another way of looking at the distance between two distributions. In both cases I used circular statistics, and did a separate test for each species. 
 
-I also used the circular mean to see whether the mean time of activity (not caring at all about the shape of the distribution) changes with temperature. I calculated the mean for all the species and chambers and did a single mixed model with all the species.
+I also used the circular median to see whether the average time of activity (not caring at all about the shape of the distribution) changes with temperature. I calculated the median for all the species and chambers and did a single mixed model with all the species.
 
-For the distance tests, basically the answer is no trend. The only one that might be changing with temperature is *Aphaenogaster rudis* at Duke Forest. It has $p < 0.1$ for both distance metrics. It appears to be changing from midday to evening activity as temperature increases. However it's not too surprising to get one marginally significant trend from chance alone if you look at enough species. 
+For the distance tests, basically the answer is no trend. The only one that might be changing with temperature is *Aphaenogaster rudis* at Duke Forest. It has $p < 0.1$ for both distance metrics. It appears to be changing from morning to evening activity as temperature increases. However it's not too surprising to get one nonzero trend from chance alone if you look at enough species. 
 
-For the mean tests, it looks a little like *Aphaenogaster* is getting later and *Prenolepis* is getting earlier at Duke Forest. That is a fairly weak trend that is not really statistically supported. So overall I think the hypothesis of little change is supported though there are some potential things happening.
+For the median tests, it looks like *Aphaenogaster* is getting later (credible interval is greater than zero) and *Prenolepis* is getting earlier (maybe, but the credible interval still overlaps zero) at Duke Forest. So overall I think the hypothesis of little change is supported though there are some potential things happening.
+
+I repeated all the analyses with summer and winter split up, but not a lot was revealed from doing that. At best, 
 
 The raw R code used to generate this document is not in the PDF but it is in the GitHub repository at `github.com/qdread/anttime/nicheshifttests.Rmd`. You can reproduce this analysis by running that code. Note that the `Ostats` package needs to be installed using `devtools::install_github('NEON-biodiversity/Ostats')`.
 
@@ -180,7 +189,9 @@ heat_map <- function(mat, key, title) {
   
   rotate <- function(x) t(apply(x, 2, rev))
   
-  image(rotate(mat_sorted), xaxt = 'none', yaxt = 'none', bty = 'n', col = hcl.colors(12, palette = 'viridis', rev = FALSE), main = title)
+  image(rotate(mat_sorted), 
+        xaxt = 'none', yaxt = 'none', bty = 'n', 
+        col = hcl.colors(12, palette = 'viridis', rev = FALSE), main = title)
   axis(3, at = seq(0,1,length.out=12)[-1], labels = key[-1], tick = FALSE)
   axis(4, at = seq(1,0,length.out=12)[-12], labels = key[-12], tick = FALSE, las = 1)
 }
@@ -192,9 +203,12 @@ heat_map <- function(mat, key, title) {
 ```{r apru heatmap}
 par(mfcol = c(1,3), pty = 's', mar = c(5.1, 4.1, 6, 2.1))
 
-heat_map(duke_temp_dist/max(duke_temp_dist), duke_key, 'temperature treatments')
-heat_map(overlap_mats$mat_emd[[6]]/max(overlap_mats$mat_emd[[6]], na.rm = TRUE), duke_key, 'earth mover\'s distance')
-heat_map(overlap_mats$mat[[6]]/max(overlap_mats$mat[[6]], na.rm = TRUE), duke_key, '1 - overlap')
+heat_map(duke_temp_dist/max(duke_temp_dist), 
+         duke_key, 'temperature treatments')
+heat_map(overlap_mats$mat_emd[[6]]/max(overlap_mats$mat_emd[[6]], na.rm = TRUE), 
+         duke_key, 'earth mover\'s distance')
+heat_map(overlap_mats$mat[[6]]/max(overlap_mats$mat[[6]], na.rm = TRUE), 
+         duke_key, '1 - overlap')
 
 ```
 
@@ -203,9 +217,12 @@ heat_map(overlap_mats$mat[[6]]/max(overlap_mats$mat[[6]], na.rm = TRUE), duke_ke
 ```{r prim heatmap}
 par(mfcol = c(1,3), pty = 's', mar = c(5.1, 4.1, 6, 2.1))
 
-heat_map(duke_temp_dist/max(duke_temp_dist), duke_key, 'temperature treatments')
-heat_map(overlap_mats$mat_emd[[1]]/max(overlap_mats$mat_emd[[1]], na.rm = TRUE), duke_key, 'earth mover\'s distance')
-heat_map(overlap_mats$mat[[1]]/max(overlap_mats$mat[[1]], na.rm = TRUE), duke_key, '1 - overlap')
+heat_map(duke_temp_dist/max(duke_temp_dist), 
+         duke_key, 'temperature treatments')
+heat_map(overlap_mats$mat_emd[[1]]/max(overlap_mats$mat_emd[[1]], na.rm = TRUE), 
+         duke_key, 'earth mover\'s distance')
+heat_map(overlap_mats$mat[[1]]/max(overlap_mats$mat[[1]], na.rm = TRUE), 
+         duke_key, '1 - overlap')
 
 ```
 
@@ -214,9 +231,12 @@ heat_map(overlap_mats$mat[[1]]/max(overlap_mats$mat[[1]], na.rm = TRUE), duke_ke
 ```{r crli heatmap}
 par(mfcol = c(1,3), pty = 's', mar = c(5.1, 4.1, 6, 2.1))
 
-heat_map(duke_temp_dist/max(duke_temp_dist), duke_key, 'temperature treatments')
-heat_map(overlap_mats$mat_emd[[3]]/max(overlap_mats$mat_emd[[3]], na.rm = TRUE), duke_key, 'earth mover\'s distance')
-heat_map(overlap_mats$mat[[3]]/max(overlap_mats$mat[[3]], na.rm = TRUE), duke_key, '1 - overlap')
+heat_map(duke_temp_dist/max(duke_temp_dist), 
+         duke_key, 'temperature treatments')
+heat_map(overlap_mats$mat_emd[[3]]/max(overlap_mats$mat_emd[[3]], na.rm = TRUE), 
+         duke_key, 'earth mover\'s distance')
+heat_map(overlap_mats$mat[[3]]/max(overlap_mats$mat[[3]], na.rm = TRUE), 
+         duke_key, '1 - overlap')
 
 ```
 
@@ -242,7 +262,7 @@ overlap_mats <- overlap_mats %>%
                  p_val = ~ map_dbl(., 'pvalue')))
 ```
 
-If we just look at the p-values, we can see that there is only the slight suggestion of a trend for *Aphaenogaster rudis* at Duke Forest. The two metrics seem to agree pretty well which is good. (*Temnothorax curvispinosus* shows marginal significance for one metric as well but it has fairly few individuals so might be more like noise).
+If we just look at the p-values, we can see that there is only a marginal trend for *Aphaenogaster rudis* at Duke Forest ($p < 0.1$ for both metrics). The two metrics seem to agree pretty well which is good. *Crematogaster* also has p-values of around 0.1 for both metrics. (*Temnothorax curvispinosus* shows marginal significance for one metric as well but it has fairly few individuals so might be more like noise).
 
 ```{r show p-values, echo = FALSE}
 overlap_mats %>%
@@ -250,51 +270,66 @@ overlap_mats %>%
 ```
 
 
-## Change in mean foraging time
+## Change in median foraging time
 
-To make things a little simpler, I also calculated the "circular mean" of the activity times for each species in each chamber. Then I did a mixed model for each site to see if temperature predicts mean activity time, with species as a random effect (random intercept and random slope).
+It is a little hard to interpret the results in terms of distributions changing. That does not really say anything about what direction they are changing in. To make a more interpretable result, I also calculated the "circular median" of the activity times for each species in each chamber. Then I did a mixed model for each site to see if temperature predicts the central tendency activity time, with species as a random effect (random intercept and random slope). 
+We can ask: is the median foraging time getting earlier (or later) with increasing temperature? The random efects model allows us to look at trends for each species while still preserving the non-independence of the species in the same chambers. I am using a Bayesian model with a special prior distribution that works with circular data.
 
-```{r model mean foraging time}
+```{r model median foraging time}
 mean_times <- dat_common %>%
   group_by(site, sp, chamber, temperature, chamber_temp) %>%
-  summarize(mean_time = mean(circular(time, units = 'hours', modulo = '2pi')))
+  summarize(median_time = median(circular(time, units = 'hours', modulo = '2pi')))
+
+# Convert median times to radians, from -pi to +pi
+mean_times <- mean_times %>%
+  mutate(median_time_radians = conversion.circular(median_time, units = 'radians', zero = pi) %>% as.numeric)
 
 options(mc.cores = 2)
-duke_mean_bayesfit <- brm(mean_time ~ temperature + (temperature | sp), 
-                          data = mean_times %>% filter(site == 'Duke'),
-                          chains = 2, iter = 2000, warmup = 1000)
-harvard_mean_bayesfit <- brm(mean_time ~ temperature + (temperature | sp), 
-                             data = mean_times %>% filter(site == 'Harvard'),
-                          chains = 2, iter = 2000, warmup = 1000)
+
+# Set prior tighter around intercept (exclude for now)
+#tight_prior <- set_prior("student_t(3, 0, 2)", class = "Intercept")
+
+duke_median_bayesfit <- brm(median_time_radians ~ temperature + (temperature | sp), 
+                            family = von_mises(), 
+                            data = mean_times %>% filter(site == 'Duke'),
+                            control = list(adapt_delta = 0.9),
+                            chains = 2, iter = 12500, warmup = 10000, seed = 44444)
+harvard_median_bayesfit <- brm(median_time_radians ~ temperature + (temperature | sp), 
+                               family = von_mises(), 
+                               data = mean_times %>% filter(site == 'Harvard'),
+                               chains = 2, iter = 12500, warmup = 10000, seed = 55555)
 ```
 
 These plots show the trends for each species from the mixed model.
 
 ```{r panel plots}
-hour_y <- scale_y_continuous(name = 'time')
-cutoff_y <- coord_cartesian(ylim = c(0, 23))
-panels(duke_mean_bayesfit, grouping = 'sp', xvar = 'temperature') + 
+# Back-transformation of the radians to hours
+hour_y <- scale_y_continuous(name = 'time', breaks = c(-pi, -pi/2, 0, pi/2, pi), labels = c(0, 6, 12, 18, 24))
+cutoff_y <- coord_cartesian(ylim = c(-pi,pi))
+panels(duke_median_bayesfit, grouping = 'sp', xvar = 'temperature') + 
   ggtitle('Duke Forest') + hour_y + cutoff_y
-panels(harvard_mean_bayesfit, grouping = 'sp', xvar = 'temperature') + 
+panels(harvard_median_bayesfit, grouping = 'sp', xvar = 'temperature') + 
   ggtitle('Harvard Forest') + hour_y + cutoff_y
 
 ```
 
 
-These are the coefficients for each species at Duke Forest and at Harvard Forest. The R-squared for the Duke model is `r round(bayes_R2(duke_mean_bayesfit)[1,1], 3)` and for the Harvard model it is `r round(bayes_R2(harvard_mean_bayesfit)[1,1], 3)`.
+These are the coefficients for each species at Duke Forest and at Harvard Forest. The R-squared for the Duke model is `r round(bayes_R2(duke_median_bayesfit)[1,1], 3)` and for the Harvard model it is `r round(bayes_R2(harvard_median_bayesfit)[1,1], 3)`.
 
-```{r show model result}
-coef(duke_mean_bayesfit)$sp[,,'temperature']
-coef(harvard_mean_bayesfit)$sp[,,'temperature']
+```{r show model result, message=TRUE}
+message('Duke Forest')
+coef(duke_median_bayesfit)$sp[,,'temperature']
+message('Harvard Forest')
+coef(harvard_median_bayesfit)$sp[,,'temperature']
 ```
 
-The thing to look at is not really the overall effect of temperature &mdash; the slopes for each individual species are what matter. The 95% credible interval of the slopes for all of the individual species overlaps zero, meaning that no species has a trend in its mean activity time with temperature. The two species that are closest to having a trend (both at Duke) are *A. rudis* which looks like it is moving from early to late, and *P. imparis* which looks like it is moving from late to early (more or less like we saw in the histograms, where the late afternoon activity is reduced). However they aren't strong trends. 
+The thing we care about is not really the overall effect of temperature &mdash; the slopes for each individual species are what matter. The 95% credible interval of the slopes for almost all of the individual species overlaps zero (those species have no trend in median activity time with temperature). The only one that does not overlap zero is *A. rudis* at Duke, which is moving from early to late. *Crematogaster* is pretty close to having a positive trend as well. If you look at the plot for *Crematogaster* you can see that the species trend appears to be a bad fit but that's really mainly because a few of the points cross over midnight. It looks like *Crematogaster* may be going from day to middle of the night with warming.
 
-I'm not really sure whether it means too much to look at the mean time, since species could have multiple peaks of activity time per day. It's just something I tried out.
+I'm not really sure whether it means too much to look at the median time, since species could have multiple peaks of activity time per day. We will have to think about the interpretation. However it is good that the two species with the most significant trends in our distribution tests are also the two that pop out in our median test.
 
 ## Repeat with summer only for Duke
 
-To check whether it's okay to lump together summer and winter for Duke Forest, I ran the exact same tests with summer only. (The non-summer data was too sparse to do it separately for winter.) The p-values are shown below.
+To check whether it's okay to lump together summer and winter for Duke Forest, I ran the exact same tests with summer only. The p-values are shown below.
 
 ```{r analysis for summer only, echo = FALSE}
 overlap_mats_summer <- dat_common %>%
@@ -344,17 +379,90 @@ overlap_mats_summer %>%
 
 We now see a more suggestive trend with *Crematogaster* but less of a trend for the other species. If you look at the histograms for *Crematogaster* it does sort of look like it is less active during the middle of the day in the hotter chambers.
 
-Let's look at the mixed model for mean times for summer only too.
+Let's look at the mixed model for median times for summer only too.
 
 ```{r model mean time summer only, echo = FALSE}
 mean_times_summer <- dat_common %>%
   group_by(site, sp, season, chamber, temperature, chamber_temp) %>%
-  summarize(mean_time = mean(circular(time, units = 'hours', modulo = '2pi')))
+  summarize(median_time = median(circular(time, units = 'hours', modulo = '2pi')))
+  
+  # Convert median times to radians, from -pi to +pi
+mean_times_summer <- mean_times_summer %>%
+  mutate(median_time_radians = conversion.circular(median_time, units = 'radians', zero = pi) %>% as.numeric)
 
-dukesummer_mean_bayesfit <- brm(mean_time ~ temperature + (temperature | sp), data = mean_times_summer %>% filter(site == 'Duke', season == 'summer'),
-                          chains = 2, iter = 2000, warmup = 1000)
+dukesummer_median_bayesfit <- brm(median_time_radians ~ temperature + (temperature | sp), 
+                                  family = von_mises(), 
+                                  data = mean_times_summer %>% filter(site == 'Duke', season == 'summer'),
+                                  control = list(adapt_delta = 0.9),
+                                  chains = 2, iter = 12500, warmup = 10000, seed = 66666)
 
-coef(dukesummer_mean_bayesfit)$sp[,,'temperature']
+coef(dukesummer_median_bayesfit)$sp[,,'temperature']
 ```
 
-No overall trends with the means ... all overlap zero and it isn't close.
+The trend for *Aphaenogaster rudis* is still the only one that does not overlap zero. *Crematogaster* is no longer close to having a trend.
+
+## Repeat with winter only for Duke
+
+These are the p-values for winter only. *Crematogaster* has the most suggestive trend.
+
+```{r analysis for winter only, echo = FALSE}
+overlap_mats_winter <- dat_common %>%
+  filter(site == 'Duke', season == 'winter') %>%
+  group_by(site, sp, chamber) %>%
+  filter(n() >= 5 & length(unique(time)) > 1) %>%
+  ungroup %>%
+  group_by(site, sp) %>%
+  filter(length(unique(chamber)) > 1) %>%
+  nest %>%
+  mutate(temp_dist = if_else(site == 'Duke', 
+                             list(duke_temp_dist), 
+                             list(harvard_temp_dist))) %>%
+  mutate(mat = map(data, 
+                   ~ all_pairs_asmatrix(traits = .$time, 
+                                        sp = .$chamber, 
+                                        metric = 'overlap')),
+         mat_emd = map(data, 
+                       ~ all_pairs_asmatrix(traits = .$time, 
+                                            sp = .$chamber, 
+                                            metric = 'emd')),
+         temp_dist = map2(mat, temp_dist, 
+                          ~ as.dist(as.matrix(.y)[as.numeric(row.names(.x)), 
+                                                  as.numeric(row.names(.x))])),
+         dist_overlap = map(mat, ~ as.dist(t(.))),
+         dist_emd = map(mat_emd, ~ as.dist(t(.))))
+
+set.seed(411)
+
+# Mantel tests for the two distance metrics for all species/site combos.
+overlap_mats_winter <- overlap_mats_winter %>%
+  mutate(mantel_test_overlap = 
+           map2(temp_dist, dist_overlap, ~ mantel.rtest(.x, .y, nrepet = 9999)),
+         mantel_test_emd = 
+           map2(temp_dist, dist_emd, ~ mantel.rtest(.x, .y, nrepet = 9999))
+  )
+
+# Extract p values (OMG p values)
+overlap_mats_winter <- overlap_mats_winter %>%
+  mutate_at(vars(starts_with('mantel_test')), 
+            list(stat = ~ map_dbl(., 'obs'), 
+                 p_val = ~ map_dbl(., 'pvalue')))
+
+overlap_mats_winter %>%
+  select(site, sp, contains('p_val'))
+```
+
+These are the coefficient estimates from the regression on the median times in winter. For some reason they are giving a weird result. I do not think there are enough data points to fit the model in winter.
+
+```{r model mean time winter only, echo = FALSE}
+# Use only the species that have valid overlaps
+spp_to_use <- c('prim','crli','apru','apla','caca')
+
+
+dukewinter_median_bayesfit <- brm(median_time_radians ~ temperature + (temperature | sp), 
+                                  family = von_mises(), 
+                                  data = mean_times_summer %>% filter(site == 'Duke', season == 'winter', sp %in% spp_to_use),
+                                  control = list(adapt_delta = 0.9),
+                                  chains = 2, iter = 12500, warmup = 10000, seed = 11111)
+
+coef(dukewinter_median_bayesfit)$sp[,,'temperature']
+```

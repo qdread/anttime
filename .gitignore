@@ -57,3 +57,5 @@ Rmd/*.pdf
 *.xls
 *.xlsx
 
+# Figures
+figs/
