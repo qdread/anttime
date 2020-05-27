@@ -59,3 +59,4 @@ Rmd/*.pdf
 
 # Figures
 figs/
+data/brmsfits_dom_tol.RData

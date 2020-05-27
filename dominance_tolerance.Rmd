@@ -1,0 +1,350 @@
+---
+title: "Time shifts vs. dominance and thermal tolerance"
+author: "Quentin D. Read"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, tidy = FALSE)
+# Stan models are not run at time of rendering -- they are saved and loaded to save time.
+```
+
+## Change log
+
+* 27 May: first version
+
+## Summary
+
+From the previous part of the analysis, we know that most of the ant species do not show any meaningful response in foraging time to the temperature treatments. The two that have a weak trend from day foraging to night foraging as it warms are *Aphaenogaster rudis* and *Crematogaster lineolata*, both at Duke Forest. We can make some hypotheses in terms of why those particular species are the ones that are shifting, even if only by a little, and the others are not. The first hypothesis is that more competitively dominant species are more likely to shift in time because they can push other species out of their foraging time niches. The second hypothesis has to do with thermal tolerance: species with a lower critical thermal maximum, or with a narrower overall thermal range, might shift in time more because they are more likely to be put into a range of temperatures where they can't perform well under the warming treatments.
+
+We have dominance index data for each species as well as thermal tolerance data so we can test these two hypotheses. We can use them as two predictor variables in a multiple regression in case there is also an interaction effect. I show results from two different response variables. 
+
+* The first candidate for response variable is the Mantel correlation between temperature distance and distributional distance: a high number would mean a bigger shift (though would not say anything about the direction of the shift). Zero is no correlation, and a negative number is also possible (meaning the more different the temperatures, the more similar the niches, which we would not expect). I am using the earth mover's distance metric for the Mantel correlation. 
+* The other potential response variable would be the slope of the median foraging time vs. temperature relationship for each species. In that case, the direction of the shift would also be important. 
+
+Note that this will be a fairly low powered test because the unit of analysis is species and there are only 9 species with adequate sample size at Duke Forest, and only 3 at Harvard Forest (not enough to run a regression on). In fact one of the three species at Harvard Forest only had a few dozen individuals observed across all times and chambers so there are really only two. All results here show Duke only.
+
+**The key result is that dominance ranking does not predict time shift, but thermal tolerance does: the higher the CTmax, the more the shift towards nocturnal.** This result is robust to different choices of variable to measure the niche shift.
+
+
+```{r load and wrangle data, message = FALSE}
+library(tidyverse)
+library(ade4)
+library(Ostats)
+library(emdist)
+library(circular)
+library(brms)
+library(brmstools)
+
+theme_set(theme_minimal())
+
+trt <- read_csv('data/chamber_treatments.csv')
+dat <- read_csv('data/data_allmonths_allsites.csv')
+
+# Create a new column in treatment with the temp and chamber ID
+# Order it by the temperature so the plots are in ascending temp order
+trt <- trt %>%
+  mutate(chamber_temp = paste0('chamber ', chamber, ': +', temperature, 'C')) %>%
+  mutate(chamber_temp = factor(chamber_temp, 
+                               levels = unique(chamber_temp)[order(site, temperature)]))
+
+# Convert month to ordered factor and join with treatment
+dat <- dat %>%
+  filter(!spp %in% c('none','unk'), !is.na(spp)) %>%
+  mutate(month = factor(month, levels = month.name)) %>%
+  left_join(trt)
+
+# Additional data wrangling:
+# Convert to long form with one row per individual ant observed.
+dat_long <- dat %>%
+  group_by(site, month, date, time,  chamber, temperature, chamber_temp) %>%
+  group_modify(~ data.frame(sp = rep(.$spp, each = .$number)))
+
+# Filter the data to show only species with at least 100 individuals
+# Also define seasons
+dat_common <- dat_long %>%
+  filter(!is.na(temperature)) %>%
+  mutate(season = if_else(month %in% month.name[4:9], 'summer', 'winter')) %>%
+  group_by(sp) %>%
+  filter(n() >= 100)
+
+# Set color palette for all species
+sp_descend <- dat_common %>% summarize(n=n()) %>% arrange(-n) %>% pull(sp)
+fill_palette <- scale_fill_manual(values = 
+  setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
+color_palette <- scale_color_manual(values = 
+  setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
+
+# Load dominance data
+dom <- read_csv('data/dominance_hierarchies.csv')
+tol <- read_csv('data/thermal_tolerance_summarystats.csv')
+spp_lookup <- read_csv('data/species_lookup.csv')
+
+# Filter for Duke only
+dat_common <- dat_common %>%
+  filter(site %in% 'Duke')
+
+```
+
+```{r load pre-run stan models}
+load('data/brmsfits_dom_tol.RData')
+```
+
+
+## Checking data before regression
+
+```{r define functions}
+# Distance between two hour distributions
+hourdist <- function(A, B) sum(pmin(  (A-B)%%24, (B-A)%%24 ) )  
+
+# Manually calculate density from the vector of hours
+calc_weight <- function(x) { # a vector of hours
+    tab <- table(factor(x,  levels=as.character(0:23)),
+                 useNA="ifany")
+
+    dimnames(tab) <- NULL
+    weights <- tab / sum(tab)
+
+    mat <- cbind( weights=weights, points=0:23 )
+    mat
+  }
+
+# Calculate EMD or overlap distance for all pairs (function)
+all_pairs_asmatrix <- function(traits, sp, metric = c('overlap', 'emd')) {
+  require(emdist)
+  dat <- data.frame(traits=traits, sp=sp, stringsAsFactors = FALSE)
+  dat <- dat[complete.cases(dat), ]
+  abunds <- table(dat$sp)
+  abunds <- abunds[abunds>1]
+  spp <- names(abunds)
+  dat <- dat[dat$sp %in% spp, ]
+  traitlist <- split(dat$traits, dat$sp)
+  nspp <- length(traitlist)
+  
+  distances <- matrix(NA, nrow = nspp, ncol = nspp)
+  
+  for (sp_a in 1:(nspp-1)) {
+    for (sp_b in (sp_a+1):nspp) {
+      a <- traitlist[[sp_a]]
+      b <- traitlist[[sp_b]]
+      density_a <- calc_weight(a)
+      density_b <- calc_weight(b)
+      if (metric[1] == 'emd') {
+        distances[sp_a, sp_b] <- emd(density_a, density_b, dist = hourdist)       
+      } 
+      if (metric[1] == 'overlap') {
+        distances[sp_a, sp_b] <- 
+          1 - circular_overlap_24hour(a, b)[1]
+      }
+    }
+  }
+  
+  dimnames(distances) <- list(spp, spp)
+  distances
+}
+
+```
+
+```{r calculate distances}
+# Create temperature distance matrix
+duke_temp_dist <- dist(trt$temperature[trt$site == 'Duke'])
+
+overlap_mats <- dat_common %>%
+  group_by(sp, chamber) %>%
+  filter(n() >= 5 & length(unique(time)) > 1) %>%
+  ungroup %>%
+  group_by(sp) %>%
+  filter(length(unique(chamber)) > 1) %>%
+  nest %>%
+  mutate(temp_dist = list(duke_temp_dist)) %>%
+  mutate(mat_emd = map(data, 
+                       ~ all_pairs_asmatrix(traits = .$time, 
+                                            sp = .$chamber, 
+                                            metric = 'emd')),
+         temp_dist = map2(mat_emd, temp_dist, 
+                          ~ as.dist(as.matrix(.y)[as.numeric(row.names(.x)), 
+                                                  as.numeric(row.names(.x))])),
+         dist_emd = map(mat_emd, ~ as.dist(t(.))))
+```
+
+
+```{r mantel tests}
+set.seed(919)
+
+# Mantel tests for the two distance metrics for all species/site combos.
+overlap_mats <- overlap_mats %>%
+  mutate(mantel_test_emd = 
+           map2(temp_dist, dist_emd, ~ mantel.rtest(.x, .y, nrepet = 9999))
+  )
+
+overlap_mats <- overlap_mats %>%
+  mutate(mantel_test_emd_stat = map_dbl(mantel_test_emd, 'obs'))
+```
+
+```{r model median foraging time}
+median_times <- dat_common %>%
+  group_by(sp, chamber, temperature, chamber_temp) %>%
+  summarize(median_time = median(circular(time, units = 'hours', modulo = '2pi')))
+
+# Convert median times to radians, from -pi to +pi
+median_times <- median_times %>%
+  mutate(median_time_radians = conversion.circular(median_time, units = 'radians', zero = pi) %>% as.numeric)
+
+# options(mc.cores = 2)
+# 
+# duke_median_bayesfit <- brm(median_time_radians ~ temperature + (temperature | sp), 
+#                             family = von_mises(), 
+#                             data = median_times,
+#                             control = list(adapt_delta = 0.9),
+#                             chains = 2, iter = 12500, warmup = 10000, seed = 44444)
+```
+
+```{r assemble data}
+# Join up the response variables with the predictors (dominance and tolerance)
+duke_coef <- coef(duke_median_bayesfit)$sp[,,'temperature'] %>%
+  as.data.frame %>%
+  mutate(sp = row.names(.))
+
+overlap_mats <- overlap_mats %>% left_join(duke_coef)
+
+overlap_mats <- overlap_mats %>% left_join(dom %>% mutate(species = gsub('crsp','crli',species)), by = c('sp' = 'species'))
+
+# To join tolerance, must get species codes.
+tol_codes <- tol %>% 
+  mutate(species = gsub('pennsylvannicus', 'pennsylvanicus', species)) %>%
+  left_join(spp_lookup) %>%
+  filter(region %in% 'NC') %>%
+  select(sp, `Mean Ctmax`, `Mean Range`)
+
+overlap_mats <- overlap_mats %>% left_join(tol_codes)
+
+# Select only rows needed
+reg_data <- overlap_mats %>% 
+  select(sp, mantel_test_emd_stat, Estimate, `Colley ranking`, `Mean Ctmax`, `Mean Range`) %>%
+  rename(temp_slope = Estimate, 
+         colley_ranking = `Colley ranking`,
+         ctmax = `Mean Ctmax`,
+         thermal_range = `Mean Range`) %>%
+  ungroup
+
+#write_csv(reg_data, 'data/regression_data.csv')
+```
+
+Figure 1 shows histograms of all the variables to see whether transformations are needed before model fitting. There are so few data points that it is hard to tell if things are skewed, but they generally look fine and do not look that skewed. The Mantel test statistics and the temperature slopes both have some positive and some negative values, more or less fifty-fifty, which means it is probably okay to just assume that their underlying distribution is normal. The predictor variables look fine too. Also, since the range of the data crosses zero and has negative values, really normal distribution is almost the only thing you can use anyway. So it is fine to not do any transformations.
+
+```{r distribution plots, fig.cap = 'Histograms of all variables'}
+# Distribution plots, Duke only
+reg_data %>%
+  pivot_longer(mantel_test_emd_stat:thermal_range) %>%
+  ggplot(aes(x = value)) +
+    facet_wrap(~ name, scales = 'free') +
+    geom_histogram(bins = 5)
+
+```
+
+Figure 2 shows paired plots of the three predictors versus one another to see if any of the predictors are highly correlated. CTmax and thermal breadth are positively correlated so we can use one or the other. I chose to use CTmax because it seemed more relevant to warming. Also, CTmax and Colley ranking are less correlated which is better if they are both going in as predictors to the regression (though both CTmax and thermal breadth are fairly negatively correlated with the Colley ranking)
+
+```{r correlations among predictors, fig.cap = 'Correlations among predictor variables'}
+preds <- reg_data %>% 
+  select(colley_ranking, ctmax, thermal_range)
+
+GGally::ggpairs(preds)
+
+```
+
+
+Table 1 shows all the data for Duke Forest, ordered by increasing temperature coefficient (`temp_slope`). Our two species with the strongest (trend toward a) niche shift, *A. rudis* and *C. lineolata*, have the highest temperature coefficient (representing the change of median foraging time with temperature) and the  The `n` column here shows the number of individuals that are included in the stat calculation, after excluding species and chambers that had too few individuals to get a distribution or a mean. The species `fopa` at Duke Forest barely makes it above the cutoff of having enough sample size, since it has only 54 observations from all times and chambers together.
+
+Table 1. All data used in regressions.
+
+```{r display table}
+counts <- overlap_mats %>% summarize(n = map_int(data, nrow))
+
+reg_data <- reg_data %>% left_join(counts)
+
+reg_data %>%
+  select(sp, temp_slope, everything()) %>%
+  mutate_if(is.numeric, ~ round(., 2)) %>%
+  arrange(temp_slope) %>%
+  knitr::kable()
+```
+
+To me, it looks like the dominance ranking is not predictive, but the CTmax and/or thermal range are potentially predictive. The two species that had the highest response to temperature, A. rudis and C. lineolata, both have a high CTmax and a high thermal breadth. The treatment response of all the species of Duke more or less increases with their CTmax. This goes against the hypothesis that the species with lower CTmax would shift their temporal niches more to compensate for the warming treatment. I can't remember what potential mechanism would explain species with a higher CTmax shifting more toward nocturnality. However it's an interesting counterpoint to Levy et al. The species that "need" to move the most in time (that are most susceptible to harm from high temperatures) are actually the ones that are moving the least! So they might really be in trouble.
+
+The next question is of course whether the pattern is strong enough to talk about statistically. I will run the regression for Duke Forest only, and weight the data points by the number of individuals in the species (so that the results will not be too affected by the rare species that might have weird values). 
+
+I ran the regression including the interaction term between dominance ranking and CTmax, using Duke only, and weighting each species' data point by the log of its number of individuals. 
+
+```{r regression}
+dat <- reg_data %>%
+  mutate(weight = log(n))
+
+# mod_slope <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat, 
+#     family = gaussian(),
+#     chains = 2, iter = 3000, warmup = 2000, seed = 123)
+# 
+# mod_emd <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat, 
+#     family = gaussian(),
+#     chains = 2, iter = 3000, warmup = 2000, seed = 234)
+# 
+# mod_slope_noint <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax, data = dat, 
+#     family = gaussian(),
+#     chains = 2, iter = 3000, warmup = 2000, seed = 456)
+# 
+# mod_emd_noint <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax, data = dat, 
+#     family = gaussian(),
+#     chains = 2, iter = 3000, warmup = 2000, seed = 567)
+# 
+# # Save stan models
+# save(duke_median_bayesfit, mod_slope, mod_emd, mod_slope_noint, mod_emd_noint, file = 'data/brmsfits_dom_tol.RData')
+```
+
+```{r coefficient plots for each model, fig.cap = 'Coefficient estimates with 95% credible intervals'}
+# Extract coefficients
+mod_coeffs <- map2_dfr(list(mod_slope, mod_slope_noint, mod_emd, mod_emd_noint),
+                       c('temp slope with interaction', 'temp slope without interaction', 'temp correlation with interaction', 'temp correlation without interaction'),
+                       ~ data.frame(response = .y, coefficient = row.names(fixef(.x)), fixef(.x)))
+
+
+ggplot(mod_coeffs %>% filter(!coefficient %in% 'Intercept'), aes(x = coefficient, y = Estimate, ymin = Q2.5, ymax = Q97.5)) +
+  facet_wrap(~ response, scales = 'free_x') +
+  geom_hline(yintercept = 0, linetype = 'dashed') +
+  geom_errorbar(width = 0.2) +
+  geom_point(size = 3) +
+  coord_flip()
+```
+
+
+The models for temperature slope and earth mover's distance both have the same result (Figure 3): no support for interaction term, so I removed it and then get a positive coefficient for CTmax but a zero coefficient for Colley ranking -- meaning we can say statistically that higher CTmax predicts more time shift with increasing temperature. It is good that both the models are qualitatively similar, regardless of which response variable I picked. So we can present one in the paper and note that the same pattern is observed with the other one (our results are robust to choice of response variable).
+
+The "conditional effect" plots show the relationship between the predictor variable (CTmax in Figure 4 and Colley ranking in Figure 5) and the response variable (either the temperature-median time slope, or the magnitude of the time niche shift with temperature increase). It is called conditional effect because I pulled out just one relationship from the multiple regression. The dashed lines are the 95% credible interval bounds around the regression fit, and the size of the points for each species is scaled by the log of number of individuals observed (which was also used as the regression weight, so even though `fopa` is an outlier it does not affect the trend much because it has so few individuals). The Colley ranking trendlines overlap zero but the CTmax trendlines are positive.
+
+```{r conditional effect plots, fig.cap = 'Conditional effect plots for CTmax'}
+cond_eff_plot <- function(fit, v, x_title, y_title) {
+  pdat <- conditional_effects(fit)
+  var_names <- c('colley_ranking', 'ctmax')
+  ggplot(pdat[[v]], aes_string(x = var_names[v])) +
+    geom_line(aes(y = estimate__)) +
+    geom_line(aes(y = lower__), linetype = 'dashed') +
+    geom_line(aes( y = upper__), linetype = 'dashed') +
+    geom_point(data = dat, aes(y = mantel_test_emd_stat, size = log10(n)), alpha = 0.5) +
+    geom_text(data = dat, aes(y = mantel_test_emd_stat - 0.02, label = sp)) +
+    scale_size_continuous(range = c(2, 5), breaks = c(2,3,4), labels=c(100,1000,10000), name = 'n. obs.') +
+    labs(x = x_title, y = y_title) +
+    theme(legend.position = 'bottom')
+}
+
+
+p1 <- cond_eff_plot(mod_slope, 2, parse(text = 'CT[max]'), 'Slope of temperature vs. median time')
+p2 <- cond_eff_plot(mod_emd, 2, parse(text = 'CT[max]'), 'Correlation of temperature shift\nand time niche shift')
+gridExtra::grid.arrange(p1, p2, nrow = 1)
+```
+
+```{r conditional effect plots colley, fig.cap = 'Conditional effect plots for dominance ranking'}
+p1 <- cond_eff_plot(mod_slope, 1, 'Colley ranking', 'Slope of temperature vs. median time')
+p2 <- cond_eff_plot(mod_emd, 1, 'Colley ranking', 'Correlation of temperature shift\nand time niche shift')
+gridExtra::grid.arrange(p1, p2, nrow = 1)
+```
+
+
