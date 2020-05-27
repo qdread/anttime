@@ -296,19 +296,47 @@ dat <- reg_data %>%
 #     family = gaussian(),
 #     chains = 2, iter = 3000, warmup = 2000, seed = 567)
 # 
+# 
+# Refit all the same models but with standardized coefficients
+# dat_std <- dat %>%
+#   mutate_at(vars(colley_ranking, ctmax), ~ (. - mean(.))/sd(.))
+# 
+# mod_slope_std <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat_std,
+#     family = gaussian(),
+#     chains = 2, iter = 3000, warmup = 2000, seed = 123)
+# 
+# mod_emd_std <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat_std,
+#     family = gaussian(),
+#     chains = 2, iter = 3000, warmup = 2000, seed = 234)
+# 
+# mod_slope_noint_std <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax, data = dat_std,
+#     family = gaussian(),
+#     chains = 2, iter = 3000, warmup = 2000, seed = 456)
+# 
+# mod_emd_noint_std <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax, data = dat_std,
+#     family = gaussian(),
+#     chains = 2, iter = 3000, warmup = 2000, seed = 567)
+
 # # Save stan models
-# save(duke_median_bayesfit, mod_slope, mod_emd, mod_slope_noint, mod_emd_noint, file = 'data/brmsfits_dom_tol.RData')
+# save(duke_median_bayesfit, mod_slope, mod_emd, mod_slope_noint, mod_emd_noint, mod_slope_std, mod_emd_std, mod_slope_noint_std, mod_emd_noint_std, file = 'data/brmsfits_dom_tol.RData')
 ```
 
-```{r coefficient plots for each model, fig.cap = 'Coefficient estimates with 95% credible intervals'}
+```{r coefficient plots for each model, fig.cap = 'Standardized coefficient estimates with 95% credible intervals'}
 # Extract coefficients
-mod_coeffs <- map2_dfr(list(mod_slope, mod_slope_noint, mod_emd, mod_emd_noint),
+mod_coeffs <- map2_dfr(list(mod_slope_std, mod_slope_noint_std, mod_emd_std, mod_emd_noint_std),
                        c('temp slope with interaction', 'temp slope without interaction', 'temp correlation with interaction', 'temp correlation without interaction'),
                        ~ data.frame(response = .y, coefficient = row.names(fixef(.x)), fixef(.x)))
 
+# Give coefficients a more sensible name
+coeff_names <- data.frame(coefficient = c("Intercept", "colley_ranking", "ctmax", "colley_ranking:ctmax"),
+                          coefficient_name = c('intercept', 'dominance\nranking', 'CTmax', 'interaction'))
 
-ggplot(mod_coeffs %>% filter(!coefficient %in% 'Intercept'), aes(x = coefficient, y = Estimate, ymin = Q2.5, ymax = Q97.5)) +
-  facet_wrap(~ response, scales = 'free_x') +
+mod_coeffs <- mod_coeffs %>%
+  left_join(coeff_names) %>%
+  filter(!coefficient %in% 'Intercept')
+                          
+ggplot(mod_coeffs, aes(x = coefficient_name, y = Estimate, ymin = Q2.5, ymax = Q97.5)) +
+  facet_wrap(~ response) +
   geom_hline(yintercept = 0, linetype = 'dashed') +
   geom_errorbar(width = 0.2) +
   geom_point(size = 3) +
@@ -316,7 +344,7 @@ ggplot(mod_coeffs %>% filter(!coefficient %in% 'Intercept'), aes(x = coefficient
 ```
 
 
-The models for temperature slope and earth mover's distance both have the same result (Figure 3): no support for interaction term, so I removed it and then get a positive coefficient for CTmax but a zero coefficient for Colley ranking -- meaning we can say statistically that higher CTmax predicts more time shift with increasing temperature. It is good that both the models are qualitatively similar, regardless of which response variable I picked. So we can present one in the paper and note that the same pattern is observed with the other one (our results are robust to choice of response variable).
+The models for temperature slope and earth mover's distance both have the same result (Figure 3): no support for interaction term, so I removed it and then get a positive coefficient for CTmax but a zero coefficient for Colley ranking -- meaning we can say statistically that higher CTmax predicts more time shift with increasing temperature. Note these are standardized coefficients so you can directly compare the effect sizes within a model. It is good that both the models are qualitatively similar, regardless of which response variable I picked. So we can present one in the paper and note that the same pattern is observed with the other one (our results are robust to choice of response variable).
 
 The "conditional effect" plots show the relationship between the predictor variable (CTmax in Figure 4 and Colley ranking in Figure 5) and the response variable (either the temperature-median time slope, or the magnitude of the time niche shift with temperature increase). It is called conditional effect because I pulled out just one relationship from the multiple regression. The dashed lines are the 95% credible interval bounds around the regression fit, and the size of the points for each species is scaled by the log of number of individuals observed (which was also used as the regression weight, so even though `fopa` is an outlier it does not affect the trend much because it has so few individuals). The Colley ranking trendlines overlap zero but the CTmax trendlines are positive.
 
