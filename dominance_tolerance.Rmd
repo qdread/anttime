@@ -320,7 +320,15 @@ The models for temperature slope and earth mover's distance both have the same r
 
 The "conditional effect" plots show the relationship between the predictor variable (CTmax in Figure 4 and Colley ranking in Figure 5) and the response variable (either the temperature-median time slope, or the magnitude of the time niche shift with temperature increase). It is called conditional effect because I pulled out just one relationship from the multiple regression. The dashed lines are the 95% credible interval bounds around the regression fit, and the size of the points for each species is scaled by the log of number of individuals observed (which was also used as the regression weight, so even though `fopa` is an outlier it does not affect the trend much because it has so few individuals). The Colley ranking trendlines overlap zero but the CTmax trendlines are positive.
 
-```{r conditional effect plots, fig.cap = 'Conditional effect plots for CTmax'}
+```{r bayesian R-squared}
+r2_slope <- bayes_R2(mod_slope)
+r2_emd <- bayes_R2(mod_emd)
+```
+
+
+Finally, the Bayesian R-squared values for the models are `r round(r2_slope[1, 'Estimate'], 2)` for the temperature slope model, with a credible interval of [`r round(r2_slope[1, 'Q2.5'], 2)`, `r round(r2_slope[1, 'Q97.5'], 2)`]. For the distribution shift model, the R-squared is `r round(r2_emd[1, 'Estimate'], 2)`, with a credible interval of [`r round(r2_emd[1, 'Q2.5'], 2)`, `r round(r2_emd[1, 'Q97.5'], 2)`]. So the relationship is a lot stronger if we are looking at shift in median foraging time, compared to shifts in the entire distribution.
+
+```{r conditional effect plots, fig.cap = 'Conditional effect plots for CTmax; R-squared values of 0.48 and 0.12'}
 cond_eff_plot <- function(fit, v, x_title, y_title) {
   pdat <- conditional_effects(fit)
   var_names <- c('colley_ranking', 'ctmax')
@@ -341,7 +349,7 @@ p2 <- cond_eff_plot(mod_emd, 2, parse(text = 'CT[max]'), 'Correlation of tempera
 gridExtra::grid.arrange(p1, p2, nrow = 1)
 ```
 
-```{r conditional effect plots colley, fig.cap = 'Conditional effect plots for dominance ranking'}
+```{r conditional effect plots colley, fig.cap = 'Conditional effect plots for dominance ranking; trend overlaps zero for both'}
 p1 <- cond_eff_plot(mod_slope, 1, 'Colley ranking', 'Slope of temperature vs. median time')
 p2 <- cond_eff_plot(mod_emd, 1, 'Colley ranking', 'Correlation of temperature shift\nand time niche shift')
 gridExtra::grid.arrange(p1, p2, nrow = 1)
