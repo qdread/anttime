@@ -1,0 +1,88 @@
+---
+title: "Nocturnal vs diurnal ants"
+author: "Quentin D. Read"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, tidy = FALSE)
+```
+
+## Summary
+
+We decided that it would be a good idea to look explicitly at which species are nocturnal, and whether their times of activity respond differently to the warming treatments. If species are already nocturnal, they have nothing to gain from shifting their time niche. This is based on the pattern we noted that the only two species that are moving in time are ones that already have a high CTmax and are diurnal. 
+
+I used the data itself to get a percentage nocturnality value for each species, by calculating the sunrise and sunset times for each day and assigning each observation to day or night. We can also identify crepuscular species by seeing how close their activity is to sunrise/sunset.
+
+```{r load and wrangle data, message = FALSE}
+source('load_wrangle_data.R')
+```
+
+## Calculation of sunrise and sunset for Duke and Harvard Forests
+
+We probably won't use Harvard Forest but just for completeness I calculated it as well. Luckily there is an R package `suncalc` so I did not have to manually input all the equations.
+
+```{r calculate sun times}
+library(suncalc)
+
+# All combinations of site and date that appear in the dataset
+all_dates <- unique(dat_long[,c('site','date')])
+
+# Coordinates of Duke and Harvard Forests
+coords <- data.frame(site = c('Duke','Harvard'),
+                     lat = c(36.01, 42.51),
+                     lon = c(-79.04, -72.21))
+
+all_dates <- all_dates %>%
+  left_join(coords) %>%
+  mutate(date = as.Date(date, format = '%m/%d/%Y'))
+
+sun_times <- getSunlightTimes(data = all_dates, tz = 'EST')
+sun_times <- left_join(all_dates, sun_times)
+
+sun_times %>%
+  select(site, date, sunrise, sunset) %>%
+  arrange(site, date) %>%
+  knitr::kable()
+```
+
+With those sunrise and sunset values we can assign a day or night value to all the times ants were observed, based on the day.
+
+```{r assign times}
+dat_withtimes <- dat_long %>%
+  ungroup %>%
+  mutate(datetime = as.POSIXct(paste0(date, ' ', time,":30"))) %>%
+  left_join(sun_times) %>%
+  mutate(day = datetime > sunrise & datetime < sunset)
+```
+
+We can use those values to summarize the proportion nocturnality of each species in the ambient treatments. I lumped together Duke and Harvard for this calculation, if that is OK.
+
+```{r summarize nocturnality}
+sp_night <- dat_withtimes %>%
+  filter(temperature == 0) %>%
+  group_by(sp) %>%
+  summarize(proportion_night = 1 - sum(day)/length(day))
+  
+write_csv(sp_night, 'data/proportion_night.csv')
+
+knitr::kable(sp_night)
+```
+
+Out of curiosity are there also crepuscular species where most activity is near dusk and dawn? I calculated this by the percentage of observations within 2 hours of dusk or dawn.
+
+```{r crepuscular}
+sp_twilight <- dat_withtimes %>%
+  ungroup %>%
+  filter(temperature == 0) %>%
+  mutate(duskdiff = abs(as.numeric(dusk - datetime)/60),
+         dawndiff = abs(as.numeric(dawn - datetime)/60),
+         twilight = duskdiff < 2 | dawndiff < 2) %>%
+  group_by(sp) %>%
+  summarize(proportion_twilight = sum(twilight)/length(twilight))
+
+knitr::kable(sp_twilight)
+```
+
+It looks like only rare species fall under this category so we can ignore it probably.

@@ -30,43 +30,7 @@ I would say, based on these results, there is no discernible trend of foraging t
 Use the `circular` package to convert the `time` column to a circular angle measure.
 
 ```{r load and wrangle data, message = FALSE}
-library(tidyverse)
-theme_set(theme_minimal())
-
-trt <- read_csv('data/chamber_treatments.csv')
-dat <- read_csv('data/data_allmonths_allsites.csv')
-
-# Create a new column in treatment with the temp and chamber ID
-# Order it by the temperature so the plots are in ascending temp order
-trt <- trt %>%
-  mutate(chamber_temp = paste0('chamber ', chamber, ': +', temperature, 'C')) %>%
-  mutate(chamber_temp = factor(chamber_temp, 
-                               levels = unique(chamber_temp)[order(site, temperature)]))
-
-# convert month to ordered factor and join with treatment
-dat <- dat %>%
-  filter(!spp %in% c('none','unk'), !is.na(spp)) %>%
-  mutate(month = factor(month, levels = month.name)) %>%
-  left_join(trt)
-
-# Additional data wrangling:
-# Convert to long form with one row per individual ant observed.
-dat_long <- dat %>%
-  group_by(site, month, date, time, chamber, temperature, chamber_temp) %>%
-  group_modify(~ data.frame(sp = rep(.$spp, each = .$number)))
-
-# Filter the data to show only species with at least 100 individuals
-dat_common <- dat_long %>%
-  filter(!is.na(temperature)) %>%
-  group_by(sp) %>%
-  filter(n() >= 100)
-
-# Set color palette for all species
-sp_descend <- dat_common %>% summarize(n=n()) %>% arrange(-n) %>% pull(sp)
-fill_palette <- scale_fill_manual(values = 
-  setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
-color_palette <- scale_color_manual(values = 
-  setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
+source('load_wrangle_data.R')
 ```
 
 
