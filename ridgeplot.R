@@ -1,50 +1,11 @@
 # Cool looking figures to show ant trends
-
+# QDR 01 Jul 2020 -- later convert this to a Rmd.
 
 # Setup -------------------------------------------------------------------
 
-
-library(tidyverse)
+source('load_wrangle_data.R')
 library(ggridges) # For ridgeline plot
-library(circular) # For circ means
 
-trt <- read_csv('data/chamber_treatments.csv')
-dat <- read_csv('data/data_allmonths_allsites.csv')
-spp <- read_csv('data/species_lookup.csv')
-
-# Create a new column in treatment with the temp and chamber ID
-# Order it by the temperature so the plots are in ascending temp order
-# relabel this to reduce the amount of text
-trt <- trt %>%
-  mutate(chamber_temp = paste0('+', temperature, '°C'))
-
-trt$chamber_temp[trt$temperature == 0] <- paste(trt$chamber_temp[trt$temperature == 0], paste0('(', c(1:3,1:3), ')'))
-
-trt <- trt %>%
-  mutate(chamber_temp = factor(chamber_temp, levels = unique(chamber_temp)[order(site, temperature)]))
-
-# Do the same data cleaning as the other script
-# Convert month to ordered factor and join with treatment
-dat <- dat %>%
-  filter(!spp %in% c('none','unk'), !is.na(spp)) %>%
-  mutate(month = factor(month, levels = month.name)) %>%
-  left_join(trt)
-
-# Additional data wrangling:
-# Convert to long form with one row per individual ant observed.
-dat_long <- dat %>%
-  group_by(site, month, date, time, chamber, temperature, chamber_temp) %>%
-  group_modify(~ data.frame(sp = rep(.$spp, each = .$number)))
-
-# Filter the data to show only species with at least 100 individuals
-dat_common <- dat_long %>%
-  filter(!is.na(temperature)) %>%
-  group_by(sp) %>%
-  filter(n() >= 100)
-
-# Set color palette for all species
-sp_descend <- dat_common %>% summarize(n=n()) %>% arrange(-n) %>% pull(sp)
-fill_palette <- scale_fill_manual(values = setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
 
 # Define seasons
 dat_common <- dat_common %>%

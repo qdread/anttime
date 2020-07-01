@@ -9,62 +9,15 @@ output: pdf_document
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
-# Change log
-
-- 6 May: convert the y-axes to actually show the counts of individuals
-- 2 April: original version
-
 # Contents
 
-This is a document for exploratory data analysis, with all the possible plots of number of foraging observations by time (across 24 hours) by site (Duke Forest and Harvard Forest) and by species (the 10 most common species at Duke Forest, and the 3 most common species at Harvard Forest). For Duke Forest observations, I plot all dates together, then separate plots for summer (April-July) and winter (October-February). All Harvard Forest observations are from June-August so I did not split them up by season. The histograms are all plotted with density (rather than the raw counts of individuals) on the y-axis, to make it easier to compare chambers with different background relative abundance of ants.
-
-# My thoughts
-
-Based on this, I would say first of all that Harvard Forest has too few species and observations to be useful. It looks like the only viable way forward is to analyze Duke Forest only. 
-
-In terms of summer vs. winter, we might be able to say that *Prenolepis imparis* has more of a pattern where it avoids midday and afternoon in the hotter chambers in summer. It is still showing up a little bit in winter. The only other species that was observed in any meaningful numbers in the winter was *A. rudis*, which really only showed up in a couple of the chambers in winter. So it's probably better to either not use the winter observations or pool them in with summer.
-
-Looking at all the species, I don't visually see super strong evidence that there is that much of a treatment effect, other than for *P. imparis*, but I think a lot of that might be noise. Maybe *Crematogaster lineolata* is shifting more to nighttime in the hotter chambers? Anything past that, I either see no difference among the treatments, or there are too few observations to tell.
-
+These are the ridge plots, created with `ggridges` package, for all the species and sites (7 spp. at Duke and 3 spp. at Harvard with adequate sample sizes). Separate ones are made for summer and winter, then there is one for each species with both seasons combined. The plots are also written to files.
 
 
 ```{r load and wrangle data}
-library(tidyverse)
-theme_set(theme_minimal() +
-            theme(legend.position = 'none'))
+source('load_wrangle_data.R')
+library(ggridges) # For ridgeline plot
 
-trt <- read_csv('data/chamber_treatments.csv')
-dat <- read_csv('data/data_allmonths_allsites.csv')
-spp <- read_csv('data/species_lookup.csv')
-
-# Create a new column in treatment with the temp and chamber ID
-# Order it by the temperature so the plots are in ascending temp order
-trt <- trt %>%
-  mutate(chamber_temp = paste0('chamber ', chamber, ': +', temperature, 'C')) %>%
-  mutate(chamber_temp = factor(chamber_temp, levels = unique(chamber_temp)[order(site, temperature)]))
-
-# Do the same data cleaning as the other script
-# Convert month to ordered factor and join with treatment
-dat <- dat %>%
-  filter(!spp %in% c('none','unk'), !is.na(spp)) %>%
-  mutate(month = factor(month, levels = month.name)) %>%
-  left_join(trt)
-
-# Additional data wrangling:
-# Convert to long form with one row per individual ant observed.
-dat_long <- dat %>%
-  group_by(site, month, date, time, chamber, temperature, chamber_temp) %>%
-  group_modify(~ data.frame(sp = rep(.$spp, each = .$number)))
-
-# Filter the data to show only species with at least 100 individuals
-dat_common <- dat_long %>%
-  filter(!is.na(temperature)) %>%
-  group_by(sp) %>%
-  filter(n() >= 100)
-
-# Set color palette for all species
-sp_descend <- dat_common %>% summarize(n=n()) %>% arrange(-n) %>% pull(sp)
-fill_palette <- scale_fill_manual(values = setNames(c(RColorBrewer::brewer.pal(9, 'Set1'), 'turquoise'), sp_descend))
 
 # Define seasons
 dat_common <- dat_common %>%
@@ -85,51 +38,202 @@ dummy_data <- dat_common %>%
   group_by(site, chamber_temp) %>% group_modify(~ data.frame(sp_season))
 
 
-dat_common <- bind_rows(dat_common, dummy_data)
+dat_common_toplot <- bind_rows(dat_common, dummy_data)
+
+temp_fill_palette <- scale_fill_distiller(palette = 'RdYlBu')
+```
+
+```{r calculate circular means and CIs}
+# Make sure not to use the one with dummy data included.
+
+summary_stats <- dat_common %>%
+  group_by(site, sp, chamber, temperature, season, chamber_temp) %>%
+  summarize(mean_time = mean(circular(time, units = 'hours', modulo = '2pi')),
+            q05_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.05),
+            q25_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.25),
+            median_time = median(circular(time, units = 'hours', modulo = '2pi')),
+            q75_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.75),
+            q95_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.95)
+            )
+
+# Include code to split up the segment into multiple chunks if it goes across midnight.
+# For the 25 to 75 quantile segment, this will be true if q25 > q75.
+
+summary_stats <- summary_stats %>%
+  mutate(seg1_start = if_else(q25_time > q75_time, 0, as.numeric(q25_time)),
+         seg1_end = if_else(q25_time > q75_time, as.numeric(q75_time), as.numeric(q75_time)),
+         seg2_start = if_else(q25_time > q75_time, as.numeric(q25_time), as.numeric(NA)),
+         seg2_end = if_else(q25_time > q75_time, 23, as.numeric(NA)))
+
+### Summary stats not split by season.
+summary_stats_combineseasons <- dat_common %>%
+  group_by(site, sp, chamber, temperature,  chamber_temp) %>%
+  summarize(mean_time = mean(circular(time, units = 'hours', modulo = '2pi')),
+            q05_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.05),
+            q25_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.25),
+            median_time = median(circular(time, units = 'hours', modulo = '2pi')),
+            q75_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.75),
+            q95_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.95)
+  ) %>%
+  mutate(seg1_start = if_else(q25_time > q75_time, 0, as.numeric(q25_time)),
+         seg1_end = if_else(q25_time > q75_time, as.numeric(q75_time), as.numeric(q75_time)),
+         seg2_start = if_else(q25_time > q75_time, as.numeric(q25_time), as.numeric(NA)),
+         seg2_end = if_else(q25_time > q75_time, 23, as.numeric(NA)))
+
+```
+
+
+```{r define functions}
+two_season_plot <- function(site_to_plot, sp_to_plot) {
+  plotdat <- dat_common_toplot %>% filter(site == site_to_plot, sp == sp_to_plot)
+  plotstats <- summary_stats %>% filter(site == site_to_plot, sp == sp_to_plot)
+  ggplot(plotdat, 
+         aes(x = time, y= chamber_temp, fill = temperature)) +
+    geom_density_ridges(aes(y = chamber_temp), alpha = 0.7, color = 'gray50', from = 0, to = 23, bandwidth = 1) +
+    geom_segment(aes(x = seg1_start, xend = seg1_end, yend = chamber_temp), data = plotstats, size = 1.5) +
+    geom_segment(aes(x = seg2_start, xend = seg2_end, yend = chamber_temp), data = plotstats, size = 1.5) +
+    geom_point(aes(x = median_time), data = plotstats, size = 2, fill = 'gray50', shape = 21, stroke = 2) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = c(0,0)) +
+    temp_fill_palette +
+    facet_wrap(~ season) +
+    coord_cartesian(clip = 'off') +
+    theme_ridges(grid = FALSE) +
+    theme(legend.position = 'none', 
+          axis.title.y = element_blank(),
+          strip.background = element_blank(),
+          panel.background = element_rect(colour = 'black', size = 0.75, linetype = 1),
+          panel.spacing = unit(2, 'lines'))
+}
+
+one_season_plot <- function(site_to_plot, sp_to_plot, season_to_plot) {
+  plotdat <- dat_common_toplot %>% filter(site == site_to_plot, sp == sp_to_plot, season %in% season_to_plot)
+  plotstats <- summary_stats %>% filter(site == site_to_plot, sp == sp_to_plot, season %in% season_to_plot)
+  ggplot(plotdat, 
+         aes(x = time, y= chamber_temp, fill = temperature)) +
+    geom_density_ridges(aes(y = chamber_temp), alpha = 0.7, color = 'gray50', from = 0, to = 23, bandwidth = 1) +
+    geom_segment(aes(x = seg1_start, xend = seg1_end, yend = chamber_temp), data = plotstats, size = 1.5) +
+    geom_segment(aes(x = seg2_start, xend = seg2_end, yend = chamber_temp), data = plotstats, size = 1.5) +
+    geom_point(aes(x = median_time), data = plotstats, size = 2, fill = 'gray50', shape = 21, stroke = 2) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = c(0,0)) +
+    temp_fill_palette +
+    coord_cartesian(clip = 'off') +
+    theme_ridges(grid = FALSE) +
+    theme(legend.position = 'none', 
+          axis.title.y = element_blank())
+}
+
+combined_season_plot <- function(site_to_plot, sp_to_plot, season_to_plot) {
+  plotdat <- dat_common_toplot %>% filter(site == site_to_plot, sp == sp_to_plot, season %in% season_to_plot)
+  plotstats <- summary_stats_combineseasons %>% filter(site == site_to_plot, sp == sp_to_plot)
+  ggplot(plotdat, 
+         aes(x = time, y= chamber_temp, fill = temperature)) +
+    geom_density_ridges(aes(y = chamber_temp), alpha = 0.7, color = 'gray50', from = 0, to = 23, bandwidth = 1) +
+    geom_segment(aes(x = seg1_start, xend = seg1_end, yend = chamber_temp), data = plotstats, size = 1.5) +
+    geom_segment(aes(x = seg2_start, xend = seg2_end, yend = chamber_temp), data = plotstats, size = 1.5) +
+    geom_point(aes(x = median_time), data = plotstats, size = 2, fill = 'gray50', shape = 21, stroke = 2) +
+    scale_x_continuous(expand = c(0,0)) +
+    scale_y_discrete(expand = c(0,0)) +
+    temp_fill_palette +
+    coord_cartesian(clip = 'off') +
+    theme_ridges(grid = FALSE) +
+    theme(legend.position = 'none', 
+          axis.title.y = element_blank())
+}
+
+```
+
+```{r create plot objects}
+harvard_spp <- c('cape', 'apru', 'fosu')
+
+duke_summer_plots <- map(sp_descend, ~ one_season_plot("Duke", ., "summer"))
+duke_winter_plots <- map(sp_descend, ~ one_season_plot("Duke", ., "winter"))
+duke_bothseasons_plots <- map(sp_descend, ~ combined_season_plot("Duke", ., c("summer", "winter")))
+harvard_summer_plots <- map(harvard_spp, ~ one_season_plot("Harvard", ., "summer"))
+
+duke_names <- gsub(' ', '_', spp$species[match(sp_descend, spp$sp)])
+harvard_names <- gsub(' ', '_', spp$species[match(harvard_spp, spp$sp)])
 ```
 
 # Duke Forest
 
-```{r duke histograms, results='asis'}
-for (sp_i in sp_descend){
-  sp_name <- spp$species[which(spp$sp == sp_i)]
-  cat('\n')  
-  cat("## ", sp_name, "\n") 
-  for (the_season in list('summer','winter',c('summer','winter'))) {
-    
-    plot_title <- ifelse(length(the_season) == 1, the_season, 'summer+winter combined')  
-    
-    print(ggplot(dat_common %>% filter(site == 'Duke', sp == sp_i, season %in% the_season), 
-                 aes(x = time, group = sp, fill = sp)) +
-            geom_histogram(binwidth = 1, position = 'identity', alpha = 0.5, color = 'black') +
-            scale_x_continuous(limits = c(0,23)) +
-            facet_wrap(~ chamber_temp, scales = 'free_y') +
-            fill_palette +
-            ggtitle(plot_title)
-    ) 
-  }
-  cat('\n') 
-}
+## Prenolepis imparis
+
+```{r duke 1}
+print(duke_summer_plots[[1]] + ggtitle('summer'))
+print(duke_winter_plots[[1]] + ggtitle('winter'))
+print(duke_bothseasons_plots[[1]] + ggtitle('both seasons combined'))
 ```
+
+## Crematogaster lineolata
+
+```{r duke 2}
+print(duke_summer_plots[[2]] + ggtitle('summer'))
+print(duke_winter_plots[[2]] + ggtitle('winter'))
+print(duke_bothseasons_plots[[2]] + ggtitle('both seasons combined'))
+```
+
+## Camponotus pennsylvanicus
+
+```{r duke 3}
+print(duke_summer_plots[[3]] + ggtitle('summer'))
+print(duke_winter_plots[[3]] + ggtitle('winter'))
+print(duke_bothseasons_plots[[3]] + ggtitle('both seasons combined'))
+```
+
+## Camponotus castaneus
+
+```{r duke 4}
+print(duke_summer_plots[[4]] + ggtitle('summer'))
+print(duke_winter_plots[[4]] + ggtitle('winter'))
+print(duke_bothseasons_plots[[4]] + ggtitle('both seasons combined'))
+```
+
+## Aphaenogaster rudis
+
+```{r duke 5}
+print(duke_summer_plots[[5]] + ggtitle('summer'))
+print(duke_winter_plots[[5]] + ggtitle('winter'))
+print(duke_bothseasons_plots[[5]] + ggtitle('both seasons combined'))
+```
+
+## Formica subsericea
+
+```{r duke 6}
+print(duke_summer_plots[[6]] + ggtitle('summer'))
+print(duke_winter_plots[[6]] + ggtitle('winter'))
+print(duke_bothseasons_plots[[6]] + ggtitle('both seasons combined'))
+```
+
+## Aphaenogaster lamellidens
+
+```{r duke 7}
+print(duke_summer_plots[[7]] + ggtitle('summer'))
+print(duke_winter_plots[[7]] + ggtitle('winter'))
+print(duke_bothseasons_plots[[7]] + ggtitle('both seasons combined'))
+```
+
+\newpage
 
 # Harvard Forest
 
-```{r harvard histograms, results='asis'}
-for (sp_i in c('cape','apru','fosu')){
-  sp_name <- spp$species[which(spp$sp == sp_i)]
-  cat('\n')  
-  cat("## ", sp_name, "\n") 
-  
-  
-  print(ggplot(dat_common %>% filter(site == 'Harvard', sp == sp_i, season %in% the_season), 
-               aes(x = time, group = sp, fill = sp)) +
-          geom_histogram(binwidth = 1, position = 'identity', alpha = 0.5, color = 'black') +
-          scale_x_continuous(limits = c(0,23)) +
-          facet_wrap(~ chamber_temp, scales = 'free_y') +
-          fill_palette +
-          ggtitle('summer')
-  ) 
-  
-  cat('\n') 
-}
+Only summer observations were done at Harvard Forest.
+
+## Camponotus pennsylvanicus
+
+```{r harvard 1}
+print(harvard_summer_plots[[1]])
+```
+
+## Aphaenogaster rudis
+
+```{r harvard 2}
+print(harvard_summer_plots[[2]])
+```
+
+## Formica subsericea
+
+```{r harvard 3}
+print(harvard_summer_plots[[3]])
 ```

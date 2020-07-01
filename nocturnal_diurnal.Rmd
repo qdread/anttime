@@ -65,7 +65,7 @@ sp_night <- dat_withtimes %>%
   group_by(sp) %>%
   summarize(proportion_night = 1 - sum(day)/length(day))
   
-write_csv(sp_night, 'data/proportion_night.csv')
+#write_csv(sp_night, 'data/proportion_night.csv')
 
 knitr::kable(sp_night)
 ```
