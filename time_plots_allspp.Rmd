@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 
 # Change log
 
+- 1 July: updated version with corrected data
 - 6 May: convert the y-axes to actually show the counts of individuals
 - 2 April: original version
 
