@@ -1,0 +1,54 @@
+---
+title: "Ant time niche methods"
+author: "Quentin D. Read"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output: pdf_document
+---
+
+# Methods
+
+## Data wrangling
+  + filter out unknown species
+  + correct all summer times from watch time to actual time by subtracting 1 hour (get rid of DST)
+  + include only species with >100 individual observations across all chambers, dates, and sites, chambers where at least 5 individuals were observed, and chambers where ants were observed during at least 2 different hours
+  
+## niche shift tests
+  + create distance matrix for pairwise temperature treatment differences between pairs of chambers
+  + find the discrete time distribution for each species in each chamber (histogram with 24 bins, one per hour). Account for circularity by converting the discrete distribution to a circular distribution
+  + within each species across all chambers, calculate the pairwise earth mover's distance between the discrete distributions in pairs of chambers
+  + also calculate the pairwise overlap of the two discrete distributions for each pair of chambers (this can be removed if we decide not to present this result)
+  + Mantel test with 9999 iterations used to calculate the correlation, for each species, between temperature distance matrix and either (1-overlap) or EMD distance matrix (say only EMD if we decide not to present the overlap stat)
+  + if the observed statistic was more extreme than 95% of random permutations of the distance matrices, it is significant.
+  + we also calculated the circular median for each distribution of times for each species in each chamber
+  + we fit a mixed model with species as a random effect (random slope and random intercept), temperature treatment as a fixed effect, and median time as the response
+  + this was done in a Bayesian framework with a von Mises distribution on the response
+  + we extracted the coefficients for each species and their 95% credible intervals. If they don't overlap zero, there is a change in median time.
+  + all of the above results were done separately for Duke and Harvard; we also split summer and winter observations for Duke and reran the analysis for each season separately.
+  
+## dominance, thermal tolerance, and nocturnality covariate regressions
+
+  + we found the sunrise and sunset times for all dates and sites, and used those to determine the % of observations for each species that were at night (in ambient chambers only), to determine a proprtion nocturnal value for each species.
+  + the other covariates we used were Colley dominance ranking (source or explanation?), CTmax, and thermal breadth.
+  + we found that proportion nocturnality was collinear with dominance ranking, and thermal breadth was collinear with CTmax.
+  + the question for the regression is: do some attributes of the species affect how their foraging patterns over time respond to increased temperature? 
+  + foraging pattern over time is either change in the median time (measured by the species' coefficient from the median time regression described above) or change in the distribution (measured by the Mantel correlation between temperature distance and EMD distance described above)
+  + we fit 2 regression models: one where the response was the statistic indicating change in median foraging time, and the other where the response was the statistic indicating change in the shape of the foraging time distribution
+  + In both cases, the predictors were dominance ranking, CTmax, and their interaction.
+  + In both cases, we weighted each species' data point by the logarithm of the number of individuals.
+  + Fit in a Bayesian framework with normal distribution on the response (probably OK but might need to change this for the Mantel stat.
+  + We calculated Bayesian R-squared for each model, and we also extracted conditional effects of each predictor separately.
+  
+# Results
+
+## niche shift tests
+
+  + The Mantel tests showed that no species significantly changed their foraging time distribution with warming. This was true when taking all observations together, and also when we split summer and winter observations for Duke Forest into separate groups.
+  + The regression on median time change showed that *Aphaenogaster lamellidens* tended to move its median time from afternoon to morning with warming. *Prenolepis imparis* tended to move its median time from late evening to night. *Camponotus pennsylvanicus* tended to move its median time from afternoon to night. *Crematogaster lineolata* tended to move its median time from late afternoion to night. Finally, *Camponotus castaneus* moved its median time but only within the night. (Include coefficients here).
+  + However, the median time change trends all overlapped zero when only summer was included in the model.
+  
+## dominance, thermal tolerance, and nocturnality covariate regressions
+
+  + We found that CTmax predicted change in foraging time with temperature increase, such that species with higher CTmax were more likely to change their foraging time. 
+  + Dominance ranking was not strongly associated with the tendency of species to change their foraging time.
+  + There was a positive interaction effect between the two.
+  + More nocturnal species were more likely to change their foraging time median and distribution.
