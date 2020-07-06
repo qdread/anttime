@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, tidy = FAL
 
 ## Change log
 
+* 2 July: some tweaks to regression
 * 29 Jun: new version correcting for DST and fixing a bad mistake in the code that changes the results
 * 27 May: first version
 
@@ -184,13 +185,15 @@ overlap_mats <- overlap_mats %>% left_join(tol_codes)
 overlap_mats <- overlap_mats %>% left_join(night)
 
 # Select only rows needed
+# Convert the coefficients to absolute value (we are interested in absolute change)
 reg_data <- overlap_mats %>% 
   select(sp, mantel_test_emd_stat, Estimate, `Colley ranking`, `Mean Ctmax`, `Mean Range`, proportion_night) %>%
   rename(temp_slope = Estimate, 
          colley_ranking = `Colley ranking`,
          ctmax = `Mean Ctmax`,
          thermal_range = `Mean Range`) %>%
-  ungroup
+  ungroup %>%
+  mutate(temp_slope = abs(temp_slope))
 
 # write_csv(reg_data, 'data/regression_data.csv')
 ```
@@ -244,42 +247,42 @@ I ran the regression including the interaction term between dominance ranking an
 dat <- reg_data %>%
   mutate(weight = log(n))
 
-# mod_slope <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat,
-#     family = gaussian(),
-#     chains = 2, iter = 3000, warmup = 2000, seed = 123)
-# 
-# mod_emd <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat,
-#     family = gaussian(),
-#     chains = 2, iter = 3000, warmup = 2000, seed = 234)
-# 
-# mod_slope_noint <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax, data = dat,
-#     family = gaussian(),
-#     chains = 2, iter = 3000, warmup = 2000, seed = 456)
-# 
-# mod_emd_noint <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax, data = dat,
-#     family = gaussian(),
-#     chains = 2, iter = 3000, warmup = 2000, seed = 567)
-# 
-# 
-# # Refit all the same models but with standardized coefficients
-# dat_std <- dat %>%
-#   mutate_at(vars(colley_ranking, ctmax), ~ (. - mean(.))/sd(.))
-# 
-# mod_slope_std <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat_std,
-#     family = gaussian(),
-#     chains = 2, iter = 3000, warmup = 2000, seed = 123)
-# 
-# mod_emd_std <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat_std,
-#     family = gaussian(),
-#     chains = 2, iter = 3000, warmup = 2000, seed = 234)
-# 
-# mod_slope_noint_std <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax, data = dat_std,
-#     family = gaussian(),
-#     chains = 2, iter = 3000, warmup = 2000, seed = 456)
-# 
-# mod_emd_noint_std <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax, data = dat_std,
-#     family = gaussian(),
-#     chains = 2, iter = 3000, warmup = 2000, seed = 567)
+mod_slope <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat,
+    family = gaussian(),
+    chains = 2, iter = 3000, warmup = 2000, seed = 123)
+
+mod_emd <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat,
+    family = gaussian(),
+    chains = 2, iter = 3000, warmup = 2000, seed = 234)
+
+mod_slope_noint <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax, data = dat,
+    family = gaussian(),
+    chains = 2, iter = 3000, warmup = 2000, seed = 456)
+
+mod_emd_noint <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax, data = dat,
+    family = gaussian(),
+    chains = 2, iter = 3000, warmup = 2000, seed = 567)
+
+
+# Refit all the same models but with standardized coefficients
+dat_std <- dat %>%
+  mutate_at(vars(colley_ranking, ctmax), ~ (. - mean(.))/sd(.))
+
+mod_slope_std <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat_std,
+    family = gaussian(),
+    chains = 2, iter = 3000, warmup = 2000, seed = 123)
+
+mod_emd_std <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax + colley_ranking:ctmax, data = dat_std,
+    family = gaussian(),
+    chains = 2, iter = 3000, warmup = 2000, seed = 234)
+
+mod_slope_noint_std <- brm(temp_slope | weights(weight) ~ colley_ranking + ctmax, data = dat_std,
+    family = gaussian(),
+    chains = 2, iter = 3000, warmup = 2000, seed = 456)
+
+mod_emd_noint_std <- brm(mantel_test_emd_stat | weights(weight) ~ colley_ranking + ctmax, data = dat_std,
+    family = gaussian(),
+    chains = 2, iter = 3000, warmup = 2000, seed = 567)
 
 # # Save stan models
 # save(duke_median_bayesfit, mod_slope, mod_emd, mod_slope_noint, mod_emd_noint, mod_slope_std, mod_emd_std, mod_slope_noint_std, mod_emd_noint_std, file = 'data/brmsfits_dom_tol.RData')

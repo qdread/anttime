@@ -1,5 +1,7 @@
 # Export some data for the O-stats package example
 
+source('load_wrangle_data.R')
+
 dat_exp <- dat_common %>%
   filter(site == 'Duke', chamber %in% c(2,3), season == 'summer')
 
@@ -24,4 +26,4 @@ dat_exp_common <- dat_exp_common %>%
   select(species, chamber, time) %>%
   arrange(chamber, time, species)
 
-write_csv(dat_exp_common %>% mutate(chamber  =chamber-1), '~/Documents/temp/ant_observation_times_by_chamber.csv')
+write_csv(dat_exp_common %>% mutate(chamber = chamber-1), '~/Documents/temp/ant_observation_times_by_chamber.csv')
