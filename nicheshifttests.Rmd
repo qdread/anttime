@@ -236,16 +236,18 @@ We can ask: is the median foraging time getting earlier (or later) with increasi
 ```{r model median foraging time}
 mean_times <- dat_common %>%
   group_by(site, sp, chamber, temperature, chamber_temp) %>%
-  summarize(median_time = median(circular(time, units = 'hours', modulo = '2pi')))
+  summarize(median_time = median(circular(time, units = 'hours', template = 'clock24', modulo = '2pi', zero = 0)))
 
 # Convert median times to radians, from -pi to +pi
 mean_times <- mean_times %>%
-  mutate(median_time_radians = conversion.circular(median_time, units = 'radians', zero = pi) %>% as.numeric)
+  mutate(median_time_radians = as.numeric(median_time) * (2*pi/24) - pi)
 
 options(mc.cores = 2)
 
-# Tighten prior on intercept so model converges
-priors <- prior_string("student_t(3, 0, 5)", class = "sd")
+# Tighten prior on intercept and SD so model converges
+priors <- c(prior(student_t(3,0,3), class = Intercept),
+            prior(student_t(3,5,3), class = sd),
+            prior(lkj_corr_cholesky(0.5), class = L, group = sp))
 
 duke_median_bayesfit <- brm(median_time_radians ~ temperature + (temperature | sp), 
                             family = von_mises(), 
