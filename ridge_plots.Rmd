@@ -53,7 +53,8 @@ summary_stats <- dat_common %>%
             q25_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.25),
             median_time = median(circular(time, units = 'hours', modulo = '2pi')),
             q75_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.75),
-            q95_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.95)
+            q95_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.95),
+            n = n()
             )
 
 # Include code to split up the segment into multiple chunks if it goes across midnight.
@@ -73,7 +74,8 @@ summary_stats_combineseasons <- dat_common %>%
             q25_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.25),
             median_time = median(circular(time, units = 'hours', modulo = '2pi')),
             q75_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.75),
-            q95_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.95)
+            q95_time = quantile(circular(time, units = 'hours', modulo = '2pi'), probs = 0.95),
+            n = n()
   ) %>%
   mutate(seg1_start = if_else(q25_time > q75_time, 0, as.numeric(q25_time)),
          seg1_end = if_else(q25_time > q75_time, as.numeric(q75_time), as.numeric(q75_time)),
@@ -89,11 +91,11 @@ two_season_plot <- function(site_to_plot, sp_to_plot) {
   plotstats <- summary_stats %>% filter(site == site_to_plot, sp == sp_to_plot)
   ggplot(plotdat, 
          aes(x = time, y= chamber_temp, fill = temperature)) +
-    geom_density_ridges(aes(y = chamber_temp), alpha = 0.7, color = 'gray50', from = 0, to = 23, bandwidth = 1) +
+    geom_density_ridges(aes(y = chamber_temp), alpha = 0.7, color = 'gray50', bins = 24, stat = 'binline', scale = 2) +
     geom_segment(aes(x = seg1_start, xend = seg1_end, yend = chamber_temp), data = plotstats, size = 1.5) +
     geom_segment(aes(x = seg2_start, xend = seg2_end, yend = chamber_temp), data = plotstats, size = 1.5) +
     geom_point(aes(x = median_time), data = plotstats, size = 2, fill = 'gray50', shape = 21, stroke = 2) +
-    scale_x_continuous(expand = c(0,0)) +
+    scale_x_continuous(expand = c(0,0), limits = c(0,23)) +
     scale_y_discrete(expand = c(0,0)) +
     temp_fill_palette +
     facet_wrap(~ season) +
@@ -111,11 +113,12 @@ one_season_plot <- function(site_to_plot, sp_to_plot, season_to_plot) {
   plotstats <- summary_stats %>% filter(site == site_to_plot, sp == sp_to_plot, season %in% season_to_plot)
   ggplot(plotdat, 
          aes(x = time, y= chamber_temp, fill = temperature)) +
-    geom_density_ridges(aes(y = chamber_temp), alpha = 0.7, color = 'gray50', from = 0, to = 23, bandwidth = 1) +
+    geom_density_ridges(aes(y = chamber_temp), alpha = 0.7, color = 'gray50', bins = 24, stat = 'binline', scale = 2) +
     geom_segment(aes(x = seg1_start, xend = seg1_end, yend = chamber_temp), data = plotstats, size = 1.5) +
     geom_segment(aes(x = seg2_start, xend = seg2_end, yend = chamber_temp), data = plotstats, size = 1.5) +
     geom_point(aes(x = median_time), data = plotstats, size = 2, fill = 'gray50', shape = 21, stroke = 2) +
-    scale_x_continuous(expand = c(0,0)) +
+    geom_text(aes(label = paste('n = ', n)), x = 0, data = plotstats, hjust = 0, vjust = -1, fontface = 'italic') +
+    scale_x_continuous(expand = c(0,0), limits=c(0,23)) +
     scale_y_discrete(expand = c(0,0)) +
     temp_fill_palette +
     coord_cartesian(clip = 'off') +
@@ -129,11 +132,12 @@ combined_season_plot <- function(site_to_plot, sp_to_plot, season_to_plot) {
   plotstats <- summary_stats_combineseasons %>% filter(site == site_to_plot, sp == sp_to_plot)
   ggplot(plotdat, 
          aes(x = time, y= chamber_temp, fill = temperature)) +
-    geom_density_ridges(aes(y = chamber_temp), alpha = 0.7, color = 'gray50', from = 0, to = 23, bandwidth = 1) +
+    geom_density_ridges(aes(y = chamber_temp), alpha = 0.7, color = 'gray50', bins = 24, stat = 'binline', scale = 2) +
     geom_segment(aes(x = seg1_start, xend = seg1_end, yend = chamber_temp), data = plotstats, size = 1.5) +
     geom_segment(aes(x = seg2_start, xend = seg2_end, yend = chamber_temp), data = plotstats, size = 1.5) +
     geom_point(aes(x = median_time), data = plotstats, size = 2, fill = 'gray50', shape = 21, stroke = 2) +
-    scale_x_continuous(expand = c(0,0)) +
+    geom_text(aes(label = paste('n = ', n)), x = 0, data = plotstats, hjust = 0, vjust = -1, fontface = 'italic') +
+    scale_x_continuous(expand = c(0,0), limits=c(0,23)) +
     scale_y_discrete(expand = c(0,0)) +
     temp_fill_palette +
     coord_cartesian(clip = 'off') +
@@ -200,9 +204,9 @@ print(duke_bothseasons_plots[[5]] + ggtitle('both seasons combined'))
 
 ## Formica subsericea
 
+This species was not observed in winter so we only show the both-seasons plot (identical to the summer plot).
+
 ```{r duke 6}
-print(duke_summer_plots[[6]] + ggtitle('summer'))
-print(duke_winter_plots[[6]] + ggtitle('winter'))
 print(duke_bothseasons_plots[[6]] + ggtitle('both seasons combined'))
 ```
 
